@@ -24,6 +24,7 @@ include(":app")
 
 include(":core")
 include(":core:network")
+include(":core:designsystem")
 
 include(":feature")
 include(":feature:auth")
