@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">GigaChat</string>
+
+    <string name="drawer_header">Меню</string>
+    <string name="drawer_search_chats">Поиск по чатам</string>
+    <string name="drawer_new_chat">Новый чат</string>
+    <string name="drawer_images">Изображения</string>
+    <string name="drawer_chats">Главная</string>
+    <string name="drawer_profile">Профиль</string>
+
+    <string name="nav_chats_title">Чаты</string>
+    <string name="nav_chat_title">Чат</string>
+    <string name="nav_profile_title">Профиль</string>
+    <string name="nav_images_title">Изображения</string>
+
+    <string name="cd_open_menu">Открыть меню</string>
+    <string name="cd_back">Назад</string>
+
+    <string name="placeholder_chat_list">Здесь будет список чатов.</string>
+    <string name="placeholder_chat">Чат: %1$s</string>
+    <string name="placeholder_profile">Здесь будет экран профиля.</string>
+    <string name="placeholder_images">Здесь будет генерация изображений.</string>
+    <string name="register_title">Регистрация</string>
+    <string name="register_placeholder">Экран регистрации появится здесь.</string>
 </resources>
