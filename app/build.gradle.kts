@@ -6,13 +6,13 @@ plugins {
 android {
     namespace = "ru.kazan.itis.bikmukhametov.gigachat"
     compileSdk {
-        version = release(36)
+        version = release(libs.versions.compileSdk.get().toInt())
     }
 
     defaultConfig {
         applicationId = "ru.kazan.itis.bikmukhametov.gigachat"
-        minSdk = 24
-        targetSdk = 36
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
 
