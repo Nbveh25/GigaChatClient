@@ -34,6 +34,9 @@ android {
 }
 
 dependencies {
+
+    implementation(project(":core:network"))
+
     // Hilt
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
