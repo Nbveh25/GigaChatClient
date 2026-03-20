@@ -2,6 +2,7 @@ package ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -10,30 +11,16 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.common.util.resource.StringResourceProvider
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
+import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.SignInWithEmailPasswordUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.validation.InputValidator
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.R
-import ru.kazan.itis.bikmukhametov.feature.auth.impl.data.NetworkException
-import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.LoadAuthFormPreferencesUseCase
-import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.SaveAuthSessionPreferencesUseCase
-import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.SignInWithEmailPasswordUseCase
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val signInWithEmailPassword: SignInWithEmailPasswordUseCase,
-    private val saveAuthSessionPreferences: SaveAuthSessionPreferencesUseCase,
     private val stringResourceProvider: StringResourceProvider,
     private val inputValidator: InputValidator,
-    loadAuthFormPreferences: LoadAuthFormPreferencesUseCase,
-) : BaseViewModel<AuthUiState, AuthIntent>(
-    loadAuthFormPreferences().let { prefs ->
-        AuthUiState(
-            rememberMe = prefs.rememberMe,
-            emailInput = prefs.savedEmail,
-        )
-    },
-) {
-
-    val uiState: StateFlow<AuthUiState> = state
+) : BaseViewModel<AuthUiState, AuthIntent>(AuthUiState()) {
 
     private val _effect = MutableSharedFlow<AuthEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<AuthEffect> = _effect.asSharedFlow()
@@ -104,6 +91,7 @@ class AuthViewModel @Inject constructor(
                 }
                 return
             }
+
             InputValidator.ValidationResult.Success -> Unit
         }
 
@@ -117,14 +105,13 @@ class AuthViewModel @Inject constructor(
             }
             signInWithEmailPassword(email, password)
                 .onSuccess {
-                    saveAuthSessionPreferences(email, current.rememberMe)
                     updateState { copy(isLoading = false) }
                     _effect.emit(AuthEffect.NavigateToChats)
                 }
                 .onFailure { e ->
                     updateState { copy(isLoading = false) }
-                    when (e) {
-                        is NetworkException -> {
+                    when {
+                        e is IOException -> {
                             updateState { copy(isNetworkError = true) }
                             _effect.emit(
                                 AuthEffect.ShowSnackbar(
@@ -133,13 +120,8 @@ class AuthViewModel @Inject constructor(
                             )
                         }
                         else -> {
-                            val msg = when (e.message) {
-                                "short_password" -> stringResourceProvider.getString(
-                                    R.string.auth_password_too_short,
-                                )
-                                else -> e.message?.takeIf { it.isNotBlank() }
-                                    ?: stringResourceProvider.getString(R.string.error_unknown)
-                            }
+                            val msg = e.message?.takeIf { it.isNotBlank() }
+                                ?: stringResourceProvider.getString(R.string.error_unknown)
                             _effect.emit(AuthEffect.ShowSnackbar(msg))
                         }
                     }

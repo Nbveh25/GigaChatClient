@@ -38,8 +38,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:designsystem"))
+    implementation(project(":core:auth"))
     implementation(project(":core:common"))
+    implementation(project(":core:designsystem"))
 
     implementation(project(":feature:auth:api"))
 
