@@ -4,6 +4,8 @@ import org.gradle.internal.extensions.core.extra
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
+
+    alias(libs.plugins.detekt) apply false
 }
 
 private val versionMajor = 1
