@@ -1,4 +1,4 @@
-package ru.kazan.itis.bikmukhametov.common.util
+package ru.kazan.itis.bikmukhametov.common.util.viewmodel
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +9,7 @@ abstract class BaseViewModel<State, Action>(initialState: State) : ViewModel() {
     private val _state = MutableStateFlow(initialState)
     val state = _state.asStateFlow()
 
-    abstract fun onAction(action: Action)
+    abstract fun onIntent(action: Action)
 
     protected fun updateState(reducer: State.() -> State) {
         _state.value = _state.value.reducer()
