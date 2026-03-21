@@ -1,5 +1,9 @@
 plugins {
     alias(libs.plugins.android.library)
+
+    alias(libs.plugins.hilt)
+
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -31,6 +35,16 @@ android {
 }
 
 dependencies {
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
     implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
