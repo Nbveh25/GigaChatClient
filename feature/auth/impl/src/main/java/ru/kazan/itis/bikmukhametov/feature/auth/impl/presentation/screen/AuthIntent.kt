@@ -1,6 +1,6 @@
 package ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen
 
-sealed interface AuthIntent {
+internal sealed interface AuthIntent {
     data class EmailChanged(val value: String) : AuthIntent
     data class PasswordChanged(val value: String) : AuthIntent
     data object TogglePasswordVisibility : AuthIntent

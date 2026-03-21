@@ -1,6 +1,6 @@
 package ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen
 
-data class AuthUiState(
+internal data class AuthUiState(
     val emailInput: String = "",
     val passwordInput: String = "",
     val isPasswordVisible: Boolean = false,

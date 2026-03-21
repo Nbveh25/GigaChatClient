@@ -40,7 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.util.regex.Pattern
 import ru.kazan.itis.bikmukhametov.designsystem.appuicomponent.AppOutlinedButton
@@ -55,10 +55,11 @@ fun AuthScreen(
     onNavigateToChats: () -> Unit = {},
     onNavigateToRegistration: () -> Unit = {},
     onGoogleSignInRequested: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: AuthViewModel = hiltViewModel()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
 
