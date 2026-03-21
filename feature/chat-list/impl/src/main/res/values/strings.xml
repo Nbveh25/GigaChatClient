@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_list_title">Чаты</string>
+    <string name="chat_list_search_hint">Поиск по названию</string>
+    <string name="chat_list_fab_new">Новый чат</string>
+    <string name="chat_list_empty">Нет чатов. Нажмите + чтобы создать.</string>
+    <string name="chat_list_item_icon">Чат</string>
+    <string name="cd_open_menu">Открыть меню</string>
+    <string name="cd_search_chats">Искать чаты</string>
+</resources>

@@ -71,6 +71,7 @@ dependencies {
     implementation(project(":feature:auth:impl"))
     implementation(project(":feature:register:impl"))
     implementation(project(":feature:chat-list:impl"))
+    implementation(project(":feature:chat-detail:impl"))
 
     // Hilt
     implementation(libs.hilt.android)

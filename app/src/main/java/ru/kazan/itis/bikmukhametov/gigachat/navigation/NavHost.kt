@@ -35,7 +35,7 @@ import ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen.AuthScr
 import ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen.RegisterScreen
 import ru.kazan.itis.bikmukhametov.gigachat.R
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.screen.ChatListScreen
-import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ChatPlaceholder
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailScreen
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.DrawerDestination
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ImagesPlaceholder
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ProfilePlaceholder
@@ -163,7 +163,7 @@ fun AppNavigation(
                 ),
             ) { entry ->
                 val chatId = entry.arguments?.getString("chatId").orEmpty()
-                ChatPlaceholder(
+                ChatDetailScreen(
                     chatId = chatId,
                     onBack = { navController.popBackStack() },
                 )

@@ -1,0 +1,33 @@
+package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.component
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import ru.kazan.itis.bikmukhametov.designsystem.appuicomponent.AppTopBar
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.R
+
+@Composable
+fun ChatDetailTopBar(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        AppTopBar(
+            title = title,
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.chat_detail_cd_back),
+                    )
+                }
+            },
+        )
+    }
+}
