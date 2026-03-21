@@ -24,38 +24,26 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.R
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.component.ChatDetailInputBar
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.component.ChatDetailTopBar
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.component.ChatMessageBubble
 
-/**
- * Экран переписки с AI. Состояние и сценарии — моки; позже сюда подключится MVI / GigaChat API.
- */
 @Composable
 fun ChatDetailScreen(
-    chatId: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    chatTitle: String = stringResource(R.string.chat_detail_screen_title),
+    viewModel: ChatDetailViewModel = hiltViewModel(),
 ) {
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var uiState by remember(chatId) {
-        mutableStateOf(ChatDetailMocks.initialState(chatTitle = chatTitle))
-    }
-    var failNextGenerationOnce by remember(chatId) { mutableStateOf(true) }
-    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
     val extraBottomItems =
@@ -71,59 +59,18 @@ fun ChatDetailScreen(
         }
     }
 
-    fun shareAssistantText(text: String) {
-        val sendIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, text)
-        }
-        context.startActivity(Intent.createChooser(sendIntent, null))
-    }
-
-    fun runMockGeneration(userText: String, isRetry: Boolean) {
-        if (userText.isBlank() || uiState.isGenerating) return
-        scope.launch {
-            uiState = uiState.copy(
-                isGenerating = true,
-                generationError = false,
-                pendingRetryText = null,
-            )
-            delay(1200)
-            if (failNextGenerationOnce && !isRetry) {
-                failNextGenerationOnce = false
-                uiState = uiState.copy(
-                    isGenerating = false,
-                    generationError = true,
-                    pendingRetryText = userText,
-                )
-                return@launch
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is ChatDetailEffect.ShareText -> {
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, effect.text)
+                    }
+                    context.startActivity(Intent.createChooser(sendIntent, null))
+                }
             }
-            uiState = uiState.copy(
-                isGenerating = false,
-                generationError = false,
-                pendingRetryText = null,
-                messages = uiState.messages + ChatMessageUi(
-                    role = ChatMessageRole.Assistant,
-                    text = ChatDetailMocks.mockAssistantReply(userText),
-                ),
-            )
         }
-    }
-
-    fun send() {
-        val trimmed = uiState.inputText.trim()
-        if (trimmed.isEmpty() || uiState.isGenerating) return
-        uiState = uiState.copy(
-            messages = uiState.messages + ChatMessageUi(role = ChatMessageRole.User, text = trimmed),
-            inputText = "",
-            generationError = false,
-            pendingRetryText = null,
-        )
-        runMockGeneration(trimmed, isRetry = false)
-    }
-
-    fun retry() {
-        val pending = uiState.pendingRetryText ?: return
-        runMockGeneration(pending, isRetry = true)
     }
 
     Scaffold(
@@ -137,9 +84,9 @@ fun ChatDetailScreen(
         bottomBar = {
             ChatDetailInputBar(
                 text = uiState.inputText,
-                onTextChange = { uiState = uiState.copy(inputText = it) },
-                onSend = ::send,
-                onClear = { uiState = uiState.copy(inputText = "") },
+                onTextChange = { viewModel.onIntent(ChatDetailIntent.InputTextChanged(it)) },
+                onSend = { viewModel.onIntent(ChatDetailIntent.SendClicked) },
+                onClear = { viewModel.onIntent(ChatDetailIntent.ClearInputClicked) },
                 sendEnabled = uiState.inputText.trim().isNotEmpty(),
                 isSending = uiState.isGenerating,
                 modifier = Modifier
@@ -162,7 +109,7 @@ fun ChatDetailScreen(
             ) { message ->
                 ChatMessageBubble(
                     message = message,
-                    onShareAssistantText = { shareAssistantText(it) },
+                    onShareAssistantText = { viewModel.onIntent(ChatDetailIntent.ShareAssistantText(it)) },
                 )
             }
             if (uiState.isGenerating) {
@@ -197,7 +144,7 @@ fun ChatDetailScreen(
                             color = MaterialTheme.colorScheme.error,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        TextButton(onClick = ::retry) {
+                        TextButton(onClick = { viewModel.onIntent(ChatDetailIntent.RetryClicked) }) {
                             Text(stringResource(R.string.chat_detail_retry))
                         }
                     }

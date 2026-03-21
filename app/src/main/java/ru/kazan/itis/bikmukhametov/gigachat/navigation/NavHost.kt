@@ -36,6 +36,7 @@ import ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen.Reg
 import ru.kazan.itis.bikmukhametov.gigachat.R
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.screen.ChatListScreen
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailScreen
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailViewModel
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.DrawerDestination
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ImagesPlaceholder
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ProfilePlaceholder
@@ -161,10 +162,8 @@ fun AppNavigation(
                 arguments = listOf(
                     navArgument("chatId") { type = NavType.StringType },
                 ),
-            ) { entry ->
-                val chatId = entry.arguments?.getString("chatId").orEmpty()
+            ) { backStackEntry ->
                 ChatDetailScreen(
-                    chatId = chatId,
                     onBack = { navController.popBackStack() },
                 )
             }

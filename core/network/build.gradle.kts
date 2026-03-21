@@ -2,6 +2,9 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.library)
+
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -49,6 +52,19 @@ android {
 }
 
 dependencies {
+    // OkHttp
+    implementation(libs.okhttp)
+
+    // Retrofit
+    implementation(libs.retrofit)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
+    // Gigachat
+    implementation(libs.chat.giga)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
