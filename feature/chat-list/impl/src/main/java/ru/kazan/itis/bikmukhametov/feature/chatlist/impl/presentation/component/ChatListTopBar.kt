@@ -30,8 +30,8 @@ import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.R
 internal fun ChatListTopBar(
     searchFieldText: String,
     onSearchFieldTextChange: (String) -> Unit,
+    onSearchClick: () -> Unit,
     onOpenDrawer: () -> Unit,
-    onSubmitSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -59,12 +59,14 @@ internal fun ChatListTopBar(
                 placeholder = { Text(stringResource(R.string.chat_list_search_hint)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { onSubmitSearch() }),
+                keyboardActions = KeyboardActions(
+                    onSearch = { onSearchClick() },
+                ),
             )
-            IconButton(onClick = onSubmitSearch) {
+            IconButton(onClick = onSearchClick) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = stringResource(R.string.chat_list_search_run),
+                    contentDescription = stringResource(R.string.cd_search_chats),
                 )
             }
         }

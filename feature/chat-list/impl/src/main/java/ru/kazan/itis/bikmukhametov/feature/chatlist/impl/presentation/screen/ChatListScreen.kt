@@ -4,74 +4,77 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import java.util.UUID
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.R
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.component.ChatListRow
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.component.ChatListTopBar
-
-private data class ChatListRowUi(val id: String, val title: String)
 
 @Composable
 fun ChatListScreen(
     onOpenDrawer: () -> Unit,
     onNavigateToChat: (chatId: String) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: ChatListViewModel = hiltViewModel(),
 ) {
-    val seedChats = remember {
-        listOf(
-            ChatListRowUi("preview-1", "Пример чата"),
-            ChatListRowUi("preview-2", "Ещё один чат"),
-        )
-    }
-    var searchFieldText by remember { mutableStateOf("") }
-    var appliedQuery by remember { mutableStateOf<String?>(null) }
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
-    val displayedChats = remember(appliedQuery, seedChats) {
-        val q = appliedQuery
-        if (q.isNullOrBlank()) seedChats else seedChats.filter { it.title.contains(q, ignoreCase = true) }
-    }
-
-    fun submitSearch() {
-        val trimmed = searchFieldText.trim()
-        appliedQuery = trimmed.takeIf { it.isNotEmpty() }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is ChatListEffect.NavigateToChat -> onNavigateToChat(effect.chatId)
+            }
+        }
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ChatListTopBar(
-                searchFieldText = searchFieldText,
-                onSearchFieldTextChange = { searchFieldText = it },
+                searchFieldText = uiState.searchFieldText,
+                onSearchFieldTextChange = { viewModel.onIntent(ChatListIntent.SearchTextChanged(it)) },
+                onSearchClick = { viewModel.onIntent(ChatListIntent.SearchClicked) },
                 onOpenDrawer = onOpenDrawer,
-                onSubmitSearch = { submitSearch() },
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNavigateToChat(UUID.randomUUID().toString()) },
+                onClick = {
+                    if (!uiState.isCreatingChat) {
+                        viewModel.onIntent(ChatListIntent.CreateNewChatClicked)
+                    }
+                },
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.chat_list_fab_new),
-                )
+                if (uiState.isCreatingChat) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.chat_list_fab_new),
+                    )
+                }
             }
         },
     ) { paddingValues ->
@@ -80,7 +83,10 @@ fun ChatListScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            if (displayedChats.isEmpty()) {
+            val isInitialLoading = uiState.isChatListLoading && uiState.chats.isEmpty()
+            if (isInitialLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (uiState.chats.isEmpty()) {
                 Text(
                     text = stringResource(R.string.chat_list_empty),
                     style = MaterialTheme.typography.bodyLarge,
@@ -95,12 +101,14 @@ fun ChatListScreen(
                     contentPadding = PaddingValues(vertical = 8.dp),
                 ) {
                     items(
-                        items = displayedChats,
+                        items = uiState.chats,
                         key = { it.id },
                     ) { chat ->
                         ChatListRow(
                             title = chat.title,
-                            onClick = { onNavigateToChat(chat.id) },
+                            onClick = {
+                                viewModel.onIntent(ChatListIntent.ChatItemClicked(chat.id))
+                            },
                         )
                     }
                 }

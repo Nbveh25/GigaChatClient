@@ -8,8 +8,8 @@ import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
+import ru.kazan.itis.bikmukhametov.common.util.error.runCatchingCancelable
 import kotlin.coroutines.resume
-import ru.kazan.itis.bikmukhametov.network.error.runCatchingCancelable
 
 class AuthRemoteDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth

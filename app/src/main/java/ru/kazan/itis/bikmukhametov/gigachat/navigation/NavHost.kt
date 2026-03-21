@@ -12,13 +12,16 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -27,7 +30,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import java.util.UUID
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen.AuthScreen
 import ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen.RegisterScreen
@@ -68,6 +70,8 @@ fun AppNavigation(
     val currentRoute = navBackStackEntry?.destination?.route
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val activity = LocalContext.current as ComponentActivity
+    val appNavViewModel: AppNavViewModel = hiltViewModel(activity)
 
     LaunchedEffect(currentRoute) {
         drawerState.close()
@@ -99,7 +103,10 @@ fun AppNavigation(
                         onClick = {
                             when (item.route) {
                                 DrawerDestination.NewChatAction -> {
-                                    navController.navigate(NavRoutes.chat(UUID.randomUUID().toString()))
+                                    scope.launch {
+                                        val id = appNavViewModel.createNewChat()
+                                        navController.navigate(NavRoutes.chat(id))
+                                    }
                                 }
                                 else -> {
                                     navController.navigate(item.route) {

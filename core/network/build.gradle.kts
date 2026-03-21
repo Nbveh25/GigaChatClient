@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
 }
@@ -5,14 +7,27 @@ plugins {
 android {
     namespace = "ru.kazan.itis.bikmukhametov.network"
     compileSdk {
-        version = release(36)
+        version = release(libs.versions.compileSdk.get().toInt())
     }
 
     defaultConfig {
-        minSdk = 24
+        minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // Читаем ключи из local.properties
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+
+        val baseUrl = localProperties.getProperty("baseUrl", "")
+        //val secretAccessKey = localProperties.getProperty("s3.secret.access.key", "")
+
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+        //buildConfigField("String", "S3_SECRET_ACCESS_KEY", "\"$secretAccessKey\"")
     }
 
     buildTypes {
@@ -27,6 +42,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        buildConfig = true
     }
 }
 
