@@ -12,6 +12,9 @@ class AuthRepositoryImpl @Inject constructor(
     override val currentUser: Any?
         get() = authDataSource.currentUser
 
+    override suspend fun awaitCurrentUserPresent(): Boolean =
+        authDataSource.awaitCurrentUserPresent()
+
     override suspend fun signInWithEmailAndPassword(
         email: String,
         password: String

@@ -6,9 +6,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import ru.kazan.itis.bikmukhametov.feature.auth.api.repository.AuthRepository
+import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.GetCurrentUserUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.SignInWithEmailPasswordUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.validation.InputValidator
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.data.repository.AuthRepositoryImpl
+import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.GetCurrentUserUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.SignInWithEmailPasswordUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.validation.InputValidatorImpl
 
@@ -29,4 +31,8 @@ internal abstract class AuthModule {
     @Binds
     @Singleton
     abstract fun bindInputValidator(impl: InputValidatorImpl): InputValidator
+
+    @Binds
+    @Singleton
+    abstract fun bindGetCurrentUserUseCase(impl: GetCurrentUserUseCaseImpl): GetCurrentUserUseCase
 }

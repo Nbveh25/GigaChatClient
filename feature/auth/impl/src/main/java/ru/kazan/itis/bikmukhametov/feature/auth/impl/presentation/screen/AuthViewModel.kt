@@ -6,11 +6,11 @@ import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.common.util.resource.StringResourceProvider
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
+import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.GetCurrentUserUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.SignInWithEmailPasswordUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.validation.InputValidator
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.R
@@ -18,12 +18,17 @@ import ru.kazan.itis.bikmukhametov.feature.auth.impl.R
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val signInWithEmailPassword: SignInWithEmailPasswordUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val stringResourceProvider: StringResourceProvider,
     private val inputValidator: InputValidator,
 ) : BaseViewModel<AuthUiState, AuthIntent>(AuthUiState()) {
 
     private val _effect = MutableSharedFlow<AuthEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<AuthEffect> = _effect.asSharedFlow()
+
+    init {
+        checkAutoLogin()
+    }
 
     override fun onIntent(action: AuthIntent) {
         when (action) {
@@ -64,6 +69,14 @@ class AuthViewModel @Inject constructor(
 
             AuthIntent.RegistrationButtonClicked -> viewModelScope.launch {
                 _effect.emit(AuthEffect.NavigateToRegistration)
+            }
+        }
+    }
+
+    private fun checkAutoLogin() {
+        viewModelScope.launch {
+            if (getCurrentUserUseCase() != null) {
+                _effect.emit(AuthEffect.NavigateToChats)
             }
         }
     }
@@ -119,6 +132,7 @@ class AuthViewModel @Inject constructor(
                                 ),
                             )
                         }
+
                         else -> {
                             val msg = e.message?.takeIf { it.isNotBlank() }
                                 ?: stringResourceProvider.getString(R.string.error_unknown)

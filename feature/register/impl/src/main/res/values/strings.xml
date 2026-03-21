@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="register_title">Регистрация</string>
+    <string name="register_back">Назад</string>
+    <string name="register_brand_title">GigaChat</string>
+    <string name="register_email_label">E-mail</string>
+    <string name="register_password_label">Пароль</string>
+    <string name="register_confirm_password_label">Повторите пароль</string>
+    <string name="register_primary_button">Зарегистрироваться</string>
+    <string name="register_retry_button">Повторить</string>
+    <string name="register_error_invalid_email">Некорректный адрес e-mail</string>
+    <string name="register_error_passwords_not_match">Пароли не совпадают</string>
+    <string name="register_message_validate_fields">Проверьте корректность полей</string>
+    <string name="register_error_network">Нет подключения к сети</string>
+    <string name="register_error_register">Не удалось зарегистрироваться</string>
+</resources>

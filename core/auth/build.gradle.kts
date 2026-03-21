@@ -37,6 +37,8 @@ dependencies {
 
     implementation(project(":core:network"))
 
+    implementation(libs.kotlinx.coroutines.android)
+
     // Hilt
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)

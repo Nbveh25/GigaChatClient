@@ -2,10 +2,13 @@ package ru.kazan.itis.bikmukhametov.auth.data.datasource
 
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.GoogleAuthProvider
 import java.io.IOException
 import javax.inject.Inject
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
+import kotlin.coroutines.resume
 import ru.kazan.itis.bikmukhametov.network.error.runCatchingCancelable
 
 class AuthRemoteDataSource @Inject constructor(
@@ -14,6 +17,20 @@ class AuthRemoteDataSource @Inject constructor(
     override val currentUser: Any?
         get() = firebaseAuth.currentUser
 
+    override suspend fun awaitCurrentUserPresent(): Boolean = suspendCancellableCoroutine { cont ->
+        val listener = object : AuthStateListener {
+            override fun onAuthStateChanged(auth: FirebaseAuth) {
+                firebaseAuth.removeAuthStateListener(this)
+                if (cont.isActive) {
+                    cont.resume(auth.currentUser != null)
+                }
+            }
+        }
+        firebaseAuth.addAuthStateListener(listener)
+        cont.invokeOnCancellation {
+            firebaseAuth.removeAuthStateListener(listener)
+        }
+    }
 
     override suspend fun signInWithEmailAndPassword(
         email: String,
