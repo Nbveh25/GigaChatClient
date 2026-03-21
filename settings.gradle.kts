@@ -22,21 +22,20 @@ dependencyResolutionManagement {
 rootProject.name = "GigaChat"
 include(":app")
 
-include(":core")
 include(":core:auth")
 include(":core:common")
 include(":core:network")
 include(":core:database")
 include(":core:designsystem")
 
-include(":feature")
-include(":feature:auth")
 include(":feature:auth:api")
 include(":feature:auth:impl")
 
-include(":feature:register")
 include(":feature:register:api")
 include(":feature:register:impl")
 
 include(":feature:chat-list:impl")
 include(":feature:chat-list:api")
+
+include(":feature:chat-detail:api")
+include(":feature:chat-detail:impl")
