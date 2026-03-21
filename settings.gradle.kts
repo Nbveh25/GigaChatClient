@@ -38,6 +38,4 @@ include(":feature:register")
 include(":feature:register:api")
 include(":feature:register:impl")
 
-include(":feature:chat-list")
-include(":feature:chat-list:api")
 include(":feature:chat-list:impl")

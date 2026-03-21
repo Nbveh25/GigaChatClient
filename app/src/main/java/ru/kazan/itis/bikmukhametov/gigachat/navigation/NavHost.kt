@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen.AuthScreen
 import ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen.RegisterScreen
 import ru.kazan.itis.bikmukhametov.gigachat.R
-import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ChatListPlaceholder
+import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.screen.ChatListScreen
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ChatPlaceholder
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.DrawerDestination
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ImagesPlaceholder
@@ -142,8 +142,11 @@ fun AppNavigation(
                 )
             }
             composable(NavRoutes.ChatList) {
-                ChatListPlaceholder(
+                ChatListScreen(
                     onOpenDrawer = { scope.launch { drawerState.open() } },
+                    onNavigateToChat = { chatId ->
+                        navController.navigate(NavRoutes.chat(chatId))
+                    },
                 )
             }
             composable(
