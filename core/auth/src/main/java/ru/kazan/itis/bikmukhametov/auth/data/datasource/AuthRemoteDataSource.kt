@@ -27,6 +27,12 @@ class AuthRemoteDataSource @Inject constructor(
         firebaseAuth.signInWithCredential(credential).await()
     }.map { }.normalizeNetworkErrors()
 
+    override suspend fun registerWithEmailAndPassword(
+        email: String,
+        password: String,
+    ): Result<Unit> = runCatchingCancelable {
+        firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+    }.map { }.normalizeNetworkErrors()
 
     override fun signOut() {
         firebaseAuth.signOut()

@@ -1,6 +1,6 @@
 package ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen
 
-internal sealed interface AuthEffect {
+sealed interface AuthEffect {
     data class ShowSnackbar(val message: String) : AuthEffect
     data object NavigateToChats : AuthEffect
     data object NavigateToRegistration : AuthEffect

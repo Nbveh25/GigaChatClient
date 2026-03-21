@@ -30,9 +30,9 @@ import androidx.navigation.navArgument
 import java.util.UUID
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.presentation.screen.AuthScreen
+import ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen.RegisterScreen
 import ru.kazan.itis.bikmukhametov.gigachat.R
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ChatListPlaceholder
-import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.RegistrationPlaceholder
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ChatPlaceholder
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.DrawerDestination
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ImagesPlaceholder
@@ -132,8 +132,13 @@ fun AppNavigation(
                 )
             }
             composable(NavRoutes.Register) {
-                RegistrationPlaceholder(
-                    onBack = { navController.popBackStack() },
+                RegisterScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(NavRoutes.Auth) {
+                            popUpTo(NavRoutes.Auth) { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
             composable(NavRoutes.ChatList) {

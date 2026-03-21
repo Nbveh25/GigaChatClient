@@ -21,6 +21,10 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signInWithGoogle(idToken: String): Result<Unit> =
         authDataSource.signInWithGoogle(idToken)
 
+    override suspend fun registerWithEmailAndPassword(
+        email: String,
+        password: String,
+    ): Result<Unit> = authDataSource.registerWithEmailAndPassword(email, password)
 
     override fun signOut() = authDataSource.signOut()
 }
