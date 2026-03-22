@@ -7,9 +7,11 @@ import dagger.hilt.components.SingletonComponent
 import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.CreateChatUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.LoadChatsBySearchUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.LoadChatsUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.ObserveChatsUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.domain.usecase.CreateChatUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.domain.usecase.LoadChatsBySearchUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.domain.usecase.LoadChatsUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.domain.usecase.ObserveChatsUseCaseImpl
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -23,4 +25,7 @@ abstract class ChatListUseCaseModule {
 
     @Binds
     abstract fun bindCreateChat(impl: CreateChatUseCaseImpl): CreateChatUseCase
+
+    @Binds
+    abstract fun bindObserveChats(impl: ObserveChatsUseCaseImpl): ObserveChatsUseCase
 }

@@ -13,7 +13,7 @@ import ru.kazan.itis.bikmukhametov.database.chatlist.dao.ChatDao
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseProvidesModule {
+object DatabaseModule {
 
     @Provides
     @Singleton
@@ -27,5 +27,8 @@ object DatabaseProvidesModule {
 
     @Provides
     fun provideChatDao(db: GigaChatDatabase): ChatDao = db.chatDao()
+
+    @Provides
+    fun provideChatMessageDao(db: GigaChatDatabase) = db.chatMessageDao()
 
 }

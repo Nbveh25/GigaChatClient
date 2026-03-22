@@ -5,6 +5,8 @@ plugins {
 
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 android {
@@ -26,11 +28,19 @@ android {
             localPropertiesFile.inputStream().use { localProperties.load(it) }
         }
 
-        val baseUrl = localProperties.getProperty("baseUrl", "")
-        //val secretAccessKey = localProperties.getProperty("s3.secret.access.key", "")
+        val authBaseUrl = localProperties.getProperty("auth.base.url", "")
+        val authKey = localProperties.getProperty("auth.key", "")
 
-        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
-        //buildConfigField("String", "S3_SECRET_ACCESS_KEY", "\"$secretAccessKey\"")
+        val apiBaseUrl = localProperties.getProperty(
+            "api.base.url",
+            "https://gigachat.devices.sberbank.ru"
+        )
+
+        buildConfigField("String", "AUTH_BASE_URL", "\"$authBaseUrl\"")
+        buildConfigField("String", "AUTH_KEY", "\"$authKey\"")
+
+
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -43,8 +53,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         buildConfig = true
@@ -52,11 +62,15 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:common"))
+
     // OkHttp
     implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 
     // Retrofit
     implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.serialization)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -65,6 +79,13 @@ dependencies {
     // Gigachat
     implementation(libs.chat.giga)
 
+    // Serialization
+    implementation(libs.kotlinx.serialization.json)
+
+    // Kvault
+    implementation(libs.kvault.store)
+
+    implementation(libs.timber)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

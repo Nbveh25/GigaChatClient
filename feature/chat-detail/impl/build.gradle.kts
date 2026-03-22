@@ -29,8 +29,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -38,8 +38,14 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:chat-detail:api"))
     implementation(project(":core:common"))
+    implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:network"))
+
+    implementation(libs.timber)
+    implementation(libs.retrofit)
 
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)

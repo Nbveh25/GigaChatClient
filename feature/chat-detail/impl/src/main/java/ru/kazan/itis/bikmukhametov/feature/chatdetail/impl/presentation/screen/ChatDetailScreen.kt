@@ -109,7 +109,9 @@ fun ChatDetailScreen(
             ) { message ->
                 ChatMessageBubble(
                     message = message,
-                    onShareAssistantText = { viewModel.onIntent(ChatDetailIntent.ShareAssistantText(it)) },
+                    onShareAssistantText = {
+                        viewModel.onIntent(ChatDetailIntent.ShareAssistantText(it))
+                    },
                 )
             }
             if (uiState.isGenerating) {
@@ -135,7 +137,9 @@ fun ChatDetailScreen(
             if (uiState.generationError && uiState.pendingRetryText != null) {
                 item(key = "error_retry") {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
@@ -143,7 +147,16 @@ fun ChatDetailScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error,
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        uiState.generationErrorMessage?.let { msg ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = msg,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                         TextButton(onClick = { viewModel.onIntent(ChatDetailIntent.RetryClicked) }) {
                             Text(stringResource(R.string.chat_detail_retry))
                         }

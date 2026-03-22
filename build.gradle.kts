@@ -13,6 +13,8 @@ plugins {
     alias(libs.plugins.ksp) apply false
 
     alias(libs.plugins.google.services) apply false
+
+    alias(libs.plugins.jetbrains.kotlin.serialization) apply false
 }
 
 private val versionMajor = 1

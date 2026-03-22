@@ -20,12 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.R
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatMessageRole
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatMessageUi
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.ChatMessageItem
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.ChatMessageRole
 
 @Composable
-fun ChatMessageBubble(
-    message: ChatMessageUi,
+internal fun ChatMessageBubble(
+    message: ChatMessageItem,
     onShareAssistantText: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
