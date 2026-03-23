@@ -68,10 +68,6 @@ fun UserInfoSection(
                 value = email,
             )
             InfoRow(
-                label = stringResource(R.string.profile_phone),
-                value = phone,
-            )
-            InfoRow(
                 label = stringResource(R.string.profile_tokens),
                 value = tokens,
             )
