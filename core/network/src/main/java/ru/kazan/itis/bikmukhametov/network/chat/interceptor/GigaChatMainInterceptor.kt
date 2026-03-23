@@ -23,12 +23,12 @@ class GigaChatMainInterceptor @Inject constructor(
         if (token == null) {
             Timber.e("GigaChatMainInterceptor: токен не получен, запрос будет без Authorization")
         } else {
-            Timber.d("GigaChatMainInterceptor: url=%s token=%s…", chain.request().url, token.take(20))
+            Timber.d("GigaChatMainInterceptor: url=%s token=%s…", chain.request().url, token)
         }
 
         val response = chain.proceed(buildRequest(chain.request(), token))
 
-        if (response.code == 401 || response.code == 403) {
+        if (response.code in HTTP_CODE_UNAUTHORIZED) {
 
             Timber.w("GigaChatMainInterceptor: получен %d, сбрасываем токен и повторяем", response.code)
 
@@ -40,8 +40,6 @@ class GigaChatMainInterceptor @Inject constructor(
                 Timber.e("GigaChatMainInterceptor: не удалось получить новый токен при повторе")
                 return chain.proceed(buildRequest(chain.request(), null))
             }
-
-            Timber.d("GigaChatMainInterceptor: повтор с новым токеном %s…", freshToken.take(20))
 
             return chain.proceed(buildRequest(chain.request(), freshToken))
         }
@@ -55,5 +53,9 @@ class GigaChatMainInterceptor @Inject constructor(
             .header("X-Request-ID", UUID.randomUUID().toString())
             .header("X-Session-ID", sessionId)
             .build()
+    }
+
+    private companion object {
+        private val HTTP_CODE_UNAUTHORIZED = 401..403
     }
 }

@@ -4,7 +4,7 @@ import javax.inject.Inject
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.SendChatMessageUseCase
 import ru.kazan.itis.bikmukhametov.network.chat.repository.GigaChatMessagesRepository
 
-class SendChatMessageUseCaseImpl @Inject constructor(
+internal class SendChatMessageUseCaseImpl @Inject constructor(
     private val gigaChatMessagesRepository: GigaChatMessagesRepository,
 ) : SendChatMessageUseCase {
 

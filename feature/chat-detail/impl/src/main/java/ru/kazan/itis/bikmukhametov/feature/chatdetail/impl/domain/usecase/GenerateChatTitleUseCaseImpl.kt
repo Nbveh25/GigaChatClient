@@ -3,7 +3,7 @@ package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase
 import jakarta.inject.Inject
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GenerateChatTitleUseCase
 
-class GenerateChatTitleUseCaseImpl @Inject constructor() : GenerateChatTitleUseCase {
+internal class GenerateChatTitleUseCaseImpl @Inject constructor() : GenerateChatTitleUseCase {
 
     override fun invoke(assistantText: String, currentTitle: String): String {
         val line = assistantText.replace('\n', ' ').trim()

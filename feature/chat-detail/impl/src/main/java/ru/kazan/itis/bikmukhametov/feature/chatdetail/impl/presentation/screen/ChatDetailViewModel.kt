@@ -34,7 +34,7 @@ class ChatDetailViewModel @Inject constructor(
     private val chatId: String = savedStateHandle.get<String>(CHAT_ID_ARG) ?: ""
 
     private val _effect = MutableSharedFlow<ChatDetailEffect>(extraBufferCapacity = 64)
-    val effect: SharedFlow<ChatDetailEffect> = _effect.asSharedFlow()
+    internal val effect: SharedFlow<ChatDetailEffect> = _effect.asSharedFlow()
 
     init {
         observeChatData()

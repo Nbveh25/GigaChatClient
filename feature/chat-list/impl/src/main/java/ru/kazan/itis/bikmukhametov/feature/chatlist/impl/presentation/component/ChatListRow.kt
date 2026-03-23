@@ -23,7 +23,6 @@ import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.R
 internal fun ChatListRow(
     title: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = Modifier

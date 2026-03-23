@@ -2,6 +2,7 @@ package ru.kazan.itis.bikmukhametov.common.util.error
 
 import kotlin.coroutines.cancellation.CancellationException
 
+@Suppress("TooGenericExceptionCaught")
 inline fun <T, R> T.runCatchingCancelable(block: T.() -> R): Result<R> {
     return try {
         Result.success(block())

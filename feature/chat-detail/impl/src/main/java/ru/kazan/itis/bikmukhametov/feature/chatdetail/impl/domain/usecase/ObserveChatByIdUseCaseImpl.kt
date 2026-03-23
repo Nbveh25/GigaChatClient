@@ -8,7 +8,7 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatSummaryModel
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatByIdUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.mapper.toSummaryModel
 
-class ObserveChatByIdUseCaseImpl @Inject constructor(
+internal class ObserveChatByIdUseCaseImpl @Inject constructor(
     private val chatRepository: ChatRepository,
 ) : ObserveChatByIdUseCase {
 
