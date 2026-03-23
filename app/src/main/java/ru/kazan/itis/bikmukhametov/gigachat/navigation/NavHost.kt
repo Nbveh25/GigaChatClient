@@ -37,9 +37,9 @@ import ru.kazan.itis.bikmukhametov.gigachat.R
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.screen.ChatListScreen
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailScreen
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailViewModel
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.presentation.screen.ProfileScreen
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.DrawerDestination
 import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ImagesPlaceholder
-import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ProfilePlaceholder
 
 private fun isOnChatDetail(entry: NavBackStackEntry?): Boolean =
     entry?.arguments?.containsKey("chatId") == true
@@ -168,8 +168,14 @@ fun AppNavigation(
                 )
             }
             composable(NavRoutes.Profile) {
-                ProfilePlaceholder(
+                ProfileScreen(
                     onOpenDrawer = { scope.launch { drawerState.open() } },
+                    onSignOutClick = {
+                        navController.navigate(NavRoutes.Auth) {
+                            popUpTo(NavRoutes.ChatList) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
             composable(NavRoutes.Images) {
