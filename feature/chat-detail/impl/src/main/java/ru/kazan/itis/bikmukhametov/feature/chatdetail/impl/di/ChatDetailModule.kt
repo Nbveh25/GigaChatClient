@@ -4,6 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.repository.GigaChatMessagesRepository
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GenerateChatTitleUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatByIdUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GetChatMessagesUseCase
@@ -12,6 +13,7 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatMes
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.RequestAssistantReplyUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.SendChatMessageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.UpdateChatTitleUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.repository.GigaChatMessagesRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GenerateChatTitleUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.ObserveChatByIdUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GetChatMessagesUseCaseImpl
@@ -24,6 +26,9 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.Update
 @Module
 @InstallIn(SingletonComponent::class)
 internal abstract class ChatDetailModule {
+
+    @Binds
+    abstract fun bindGigaChatMessagesRepository(impl: GigaChatMessagesRepositoryImpl): GigaChatMessagesRepository
 
     @Binds
     abstract fun bindRequestAssistantReplyUseCase(impl: RequestAssistantReplyUseCaseImpl): RequestAssistantReplyUseCase

@@ -1,4 +1,4 @@
-package ru.kazan.itis.bikmukhametov.network.chat.repository
+package ru.kazan.itis.bikmukhametov.feature.chatdetail.api.repository
 
 interface GigaChatMessagesRepository {
 

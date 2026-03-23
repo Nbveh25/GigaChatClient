@@ -1,4 +1,4 @@
-package ru.kazan.itis.bikmukhametov.network.chat.api
+package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.api
 
 import retrofit2.http.Body
 import retrofit2.http.POST

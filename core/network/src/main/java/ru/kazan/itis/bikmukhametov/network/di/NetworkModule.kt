@@ -19,9 +19,6 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import ru.kazan.itis.bikmukhametov.network.BuildConfig
 import ru.kazan.itis.bikmukhametov.network.auth.api.GigaChatAuthApi
 import ru.kazan.itis.bikmukhametov.network.auth.interceptor.GigaChatAuthInterceptor
-import ru.kazan.itis.bikmukhametov.network.auth.token.GigaChatAuthenticator
-import ru.kazan.itis.bikmukhametov.network.chat.api.GigaChatMainApi
-import ru.kazan.itis.bikmukhametov.network.chat.interceptor.GigaChatMainInterceptor
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -68,40 +65,6 @@ object NetworkModule {
             .addConverterFactory(converterFactory)
             .build()
             .create(GigaChatAuthApi::class.java)
-    }
-
-    // OkHttp для чата (с авторизацией через Authenticator)
-    @Provides
-    @Singleton
-    @Named("MainOkHttp")
-    fun provideChatOkHttpClient(
-        mainInterceptor: GigaChatMainInterceptor,
-        authenticator: GigaChatAuthenticator
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(mainInterceptor)
-            .authenticator(authenticator)
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
-            .build()
-    }
-
-    // Ретрофит для чата GigaChat
-    @Provides
-    @Singleton
-    fun provideGigaChatMainApi(
-        @Named("MainOkHttp") okHttpClient: OkHttpClient,
-        converterFactory: Converter.Factory,
-    ): GigaChatMainApi {
-        val baseUrl = BuildConfig.API_BASE_URL
-        val url = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
-        return Retrofit.Builder()
-            .baseUrl(url)
-            .client(okHttpClient)
-            .addConverterFactory(converterFactory)
-            .build()
-            .create(GigaChatMainApi::class.java)
     }
 
     @Provides

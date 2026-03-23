@@ -1,4 +1,4 @@
-package ru.kazan.itis.bikmukhametov.network.chat.interceptor
+package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.interceptor
 
 import jakarta.inject.Inject
 import jakarta.inject.Singleton

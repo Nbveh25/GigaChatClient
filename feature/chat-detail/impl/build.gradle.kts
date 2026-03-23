@@ -45,6 +45,8 @@ dependencies {
     implementation(project(":core:network"))
 
     implementation(libs.timber)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
     implementation(libs.retrofit)
 
     ksp(libs.hilt.compiler)
