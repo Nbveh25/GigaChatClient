@@ -6,4 +6,5 @@ data class ChatMessageModel(
     val role: String,
     val text: String,
     val createdAtEpochMillis: Long,
+    val functionsStateId: String? = null,
 )

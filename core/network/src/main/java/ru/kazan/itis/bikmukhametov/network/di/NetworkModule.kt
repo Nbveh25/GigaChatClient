@@ -31,6 +31,7 @@ object NetworkModule {
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true // Чтобы не падало при новых полях в API
         coerceInputValues = true // На случай несовпадения типов null/default
+        explicitNulls = false // Не слать null в JSON (например functions_state_id только при необходимости)
     }
 
     @Provides

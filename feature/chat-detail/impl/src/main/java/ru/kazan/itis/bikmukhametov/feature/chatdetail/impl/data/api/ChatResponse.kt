@@ -1,5 +1,6 @@
 package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.api
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,4 +17,5 @@ data class ChatChoice(
 data class ChatMessageResponse(
     val content: String = "",
     val role: String = "assistant",
+    @SerialName("functions_state_id") val functionsStateId: String? = null,
 )

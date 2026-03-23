@@ -24,4 +24,5 @@ data class ChatMessageEntity(
     @ColumnInfo(name = "role") val role: String,
     @ColumnInfo(name = "text") val text: String,
     @ColumnInfo(name = "created_at_ms") val createdAtEpochMillis: Long,
+    @ColumnInfo(name = "functions_state_id") val functionsStateId: String? = null,
 )

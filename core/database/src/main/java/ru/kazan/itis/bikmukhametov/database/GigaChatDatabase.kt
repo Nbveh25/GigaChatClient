@@ -10,7 +10,7 @@ import ru.kazan.itis.bikmukhametov.database.chatlist.entity.ChatMessageEntity
 
 @Database(
     entities = [ChatEntity::class, ChatFts::class, ChatMessageEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class GigaChatDatabase : RoomDatabase() {

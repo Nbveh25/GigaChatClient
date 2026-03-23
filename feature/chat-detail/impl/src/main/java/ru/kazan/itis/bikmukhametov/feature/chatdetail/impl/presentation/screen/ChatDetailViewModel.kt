@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatMessageModel
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.DownloadGeneratedImageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatByIdUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.InsertChatMessageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatMessagesUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.RequestAssistantReplyUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.ChatMessageItem
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.toItem
 
 @HiltViewModel
@@ -29,12 +31,16 @@ class ChatDetailViewModel @Inject constructor(
     private val insertChatMessageUseCase: InsertChatMessageUseCase,
     private val observeChatMessagesUseCase: ObserveChatMessagesUseCase,
     private val requestAssistantReplyUseCase: RequestAssistantReplyUseCase,
+    private val downloadGeneratedImageUseCase: DownloadGeneratedImageUseCase,
 ) : BaseViewModel<ChatDetailUiState, ChatDetailIntent>(ChatDetailUiState()) {
 
     private val chatId: String = savedStateHandle.get<String>(CHAT_ID_ARG) ?: ""
 
     private val _effect = MutableSharedFlow<ChatDetailEffect>(extraBufferCapacity = 64)
     internal val effect: SharedFlow<ChatDetailEffect> = _effect.asSharedFlow()
+
+    private val imagesByFileId = mutableMapOf<String, ByteArray>()
+    private val loadingImageIds = mutableSetOf<String>()
 
     init {
         observeChatData()
@@ -66,10 +72,49 @@ class ChatDetailViewModel @Inject constructor(
 
         // сообщения
         observeChatMessagesUseCase(chatId)
-            .map { messages -> messages.map { it.toItem() } }
+            .map { messages -> messages.map { it.toItem(imagesByFileId) } }
             .flowOn(Dispatchers.Default)
-            .onEach { items -> updateState { copy(messages = items) } }
+            .onEach { items ->
+                updateState { copy(messages = items) }
+                ensureImagesLoaded(items)
+            }
             .launchIn(viewModelScope)
+    }
+
+    private fun ensureImagesLoaded(items: List<ChatMessageItem>) {
+        val fileIdsToLoad = items.asSequence()
+            .mapNotNull { it.imageFileId }
+            .filterNot(imagesByFileId::containsKey)
+            .filterNot(loadingImageIds::contains)
+            .toList()
+
+        fileIdsToLoad.forEach(::loadImage)
+    }
+
+    private fun loadImage(fileId: String) {
+        loadingImageIds += fileId
+
+        viewModelScope.launch {
+            downloadGeneratedImageUseCase(fileId)
+                .onSuccess { bytes ->
+                    imagesByFileId[fileId] = bytes
+                    updateState {
+                        copy(
+                            messages = messages.map { message ->
+                                if (message.imageFileId == fileId) {
+                                    message.copy(imageBytes = bytes)
+                                } else {
+                                    message
+                                }
+                            }
+                        )
+                    }
+                }
+                .onFailure {
+                    // Если загрузка не удалась, оставляем только текстовую часть сообщения.
+                }
+            loadingImageIds -= fileId
+        }
     }
 
     private fun send() {

@@ -10,6 +10,7 @@ internal fun ChatMessageEntity.toModel(): ChatMessageModel =
         role = role,
         text = text,
         createdAtEpochMillis = createdAtEpochMillis,
+        functionsStateId = functionsStateId,
     )
 
 internal fun ChatMessageModel.toEntity(): ChatMessageEntity =
@@ -19,4 +20,5 @@ internal fun ChatMessageModel.toEntity(): ChatMessageEntity =
         role = role,
         text = text,
         createdAtEpochMillis = createdAtEpochMillis,
+        functionsStateId = functionsStateId,
     )

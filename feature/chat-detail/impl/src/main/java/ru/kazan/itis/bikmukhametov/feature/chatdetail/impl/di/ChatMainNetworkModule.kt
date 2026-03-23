@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Named
 import javax.inject.Singleton
+import java.util.concurrent.TimeUnit
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,6 +28,10 @@ object ChatMainNetworkModule {
         authenticator: GigaChatAuthenticator,
     ): OkHttpClient =
         OkHttpClient.Builder()
+            // Дефолт OkHttp — 10 с на connect/read; completions и text2image у GigaChat часто дольше.
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.MINUTES)
+            .writeTimeout(120, TimeUnit.SECONDS)
             .addInterceptor(mainInterceptor)
             .authenticator(authenticator)
             .addInterceptor(

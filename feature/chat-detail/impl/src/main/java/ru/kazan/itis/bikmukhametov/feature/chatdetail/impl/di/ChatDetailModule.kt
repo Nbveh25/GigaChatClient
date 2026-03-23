@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.repository.GigaChatMessagesRepository
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.DownloadGeneratedImageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GenerateChatTitleUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatByIdUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GetChatMessagesUseCase
@@ -15,6 +16,7 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.SendChatMessag
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.UpdateChatTitleUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.repository.GigaChatMessagesRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GenerateChatTitleUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.DownloadGeneratedImageUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.ObserveChatByIdUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GetChatMessagesUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.InsertChatMessageUseCaseImpl
@@ -54,4 +56,7 @@ internal abstract class ChatDetailModule {
 
     @Binds
     abstract fun bindGenerateChatTitleUseCase(impl: GenerateChatTitleUseCaseImpl): GenerateChatTitleUseCase
+
+    @Binds
+    abstract fun bindDownloadGeneratedImageUseCase(impl: DownloadGeneratedImageUseCaseImpl): DownloadGeneratedImageUseCase
 }

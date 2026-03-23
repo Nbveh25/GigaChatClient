@@ -1,10 +1,14 @@
 package ru.kazan.itis.bikmukhametov.feature.chatdetail.api.repository
 
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatAssistantReply
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatCompletionMessage
+
 interface GigaChatMessagesRepository {
 
     /**
-     * Отправляет историю сообщений в GigaChat и возвращает текст ответа ассистента.
-     * @param messages пары (role, content), например "user"/"assistant".
+     * Отправляет историю в GigaChat и возвращает ответ ассистента (в т.ч. [ChatAssistantReply.functionsStateId] для следующих запросов).
      */
-    suspend fun sendChatCompletion(messages: List<Pair<String, String>>): Result<String>
+    suspend fun sendChatCompletion(messages: List<ChatCompletionMessage>): Result<ChatAssistantReply>
+
+    suspend fun downloadGeneratedImage(fileId: String): Result<ByteArray>
 }
