@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Named
 import javax.inject.Singleton
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
@@ -28,7 +29,6 @@ import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UpdateUserNameUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UploadProfilePhotoUseCase
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.api.GigaChatTokensApi
-import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.interceptor.GigaChatProfileInterceptor
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.repository.AppThemeRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.repository.ProfileRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.resource.ImageResourceProviderImpl
@@ -64,7 +64,7 @@ internal object ProfileProvideModule {
     @Singleton
     @Named("ProfileTokensOkHttp")
     fun provideProfileTokensOkHttp(
-        profileInterceptor: GigaChatProfileInterceptor,
+        @Named("GigaChatApiInterceptor") profileInterceptor: Interceptor,
         authenticator: GigaChatAuthenticator,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(profileInterceptor)

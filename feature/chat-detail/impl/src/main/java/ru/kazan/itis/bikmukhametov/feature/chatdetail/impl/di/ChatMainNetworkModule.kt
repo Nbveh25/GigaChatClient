@@ -6,12 +6,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Named
 import javax.inject.Singleton
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.api.GigaChatMainApi
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.interceptor.GigaChatMainInterceptor
 import ru.kazan.itis.bikmukhametov.network.BuildConfig
 import ru.kazan.itis.bikmukhametov.network.auth.token.GigaChatAuthenticator
 
@@ -23,7 +23,7 @@ object ChatMainNetworkModule {
     @Singleton
     @Named("MainOkHttp")
     fun provideMainOkHttp(
-        mainInterceptor: GigaChatMainInterceptor,
+        @Named("GigaChatApiInterceptor") mainInterceptor: Interceptor,
         authenticator: GigaChatAuthenticator,
     ): OkHttpClient =
         OkHttpClient.Builder()

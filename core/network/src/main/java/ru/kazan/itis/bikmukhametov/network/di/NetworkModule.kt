@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -18,6 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import ru.kazan.itis.bikmukhametov.network.BuildConfig
 import ru.kazan.itis.bikmukhametov.network.auth.api.GigaChatAuthApi
+import ru.kazan.itis.bikmukhametov.network.auth.interceptor.GigaChatApiInterceptor
 import ru.kazan.itis.bikmukhametov.network.auth.interceptor.GigaChatAuthInterceptor
 
 @Module
@@ -72,5 +74,12 @@ object NetworkModule {
     fun provideKVault(@ApplicationContext context: Context): KVault {
         return KVault(context, "gigachat_secure_prefs")
     }
+
+    @Provides
+    @Singleton
+    @Named("GigaChatApiInterceptor")
+    fun provideGigaChatApiInterceptor(
+        interceptor: GigaChatApiInterceptor,
+    ): Interceptor = interceptor
 
 }
