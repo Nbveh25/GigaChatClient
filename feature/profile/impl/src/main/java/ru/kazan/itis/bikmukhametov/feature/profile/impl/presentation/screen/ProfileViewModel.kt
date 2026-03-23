@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import ru.kazan.itis.bikmukhametov.api.usecase.GetAppThemeUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.GetTokensCountUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.GetUserProfileUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SelectImageUseCase
+import ru.kazan.itis.bikmukhametov.api.usecase.SetAppThemeUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UpdateUserNameUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UploadProfilePhotoUseCase
@@ -18,6 +20,8 @@ import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
+    private val getAppThemeUseCase: GetAppThemeUseCase,
+    private val setAppThemeUseCase: SetAppThemeUseCase,
     private val getTokensCountUseCase: GetTokensCountUseCase,
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val updateUserNameUseCase: UpdateUserNameUseCase,
@@ -30,6 +34,7 @@ class ProfileViewModel @Inject constructor(
     val effect: SharedFlow<ProfileEffect> = _effect.asSharedFlow()
 
     init {
+        updateState { copy(isDarkTheme = getAppThemeUseCase()) }
         onIntent(ProfileIntent.LoadProfile)
     }
 
@@ -39,9 +44,14 @@ class ProfileViewModel @Inject constructor(
             is ProfileIntent.UpdateUserName -> updateUserName(action.name)
             ProfileIntent.PhotoClicked -> emitEffect(ProfileEffect.OpenPhotoPicker)
             is ProfileIntent.PhotoSelected -> uploadPhoto(action.imageUriString)
-            is ProfileIntent.ThemeChanged -> updateState { copy(isDarkTheme = action.isDarkTheme) }
+            is ProfileIntent.ThemeChanged -> setAppTheme(action.isDarkTheme)
             ProfileIntent.SignOutClicked -> signOut()
         }
+    }
+
+    private fun setAppTheme(isDarkTheme: Boolean) {
+        setAppThemeUseCase(isDarkTheme)
+        updateState { copy(isDarkTheme = isDarkTheme) }
     }
 
     private fun updateUserName(name: String) {

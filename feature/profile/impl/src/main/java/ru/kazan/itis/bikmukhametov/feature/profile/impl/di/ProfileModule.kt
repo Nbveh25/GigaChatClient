@@ -2,6 +2,7 @@ package ru.kazan.itis.bikmukhametov.feature.profile.impl.di
 
 import android.content.ContentResolver
 import android.content.Context
+import android.content.SharedPreferences
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -14,22 +15,28 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit
+import ru.kazan.itis.bikmukhametov.api.repository.AppThemeRepository
 import ru.kazan.itis.bikmukhametov.api.repository.ProfileRepository
 import ru.kazan.itis.bikmukhametov.api.resource.ImageResourceProvider
 import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import ru.kazan.itis.bikmukhametov.api.usecase.GetAppThemeUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.GetTokensCountUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.GetUserProfileUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SelectImageUseCase
+import ru.kazan.itis.bikmukhametov.api.usecase.SetAppThemeUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UpdateUserNameUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UploadProfilePhotoUseCase
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.api.GigaChatTokensApi
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.interceptor.GigaChatProfileInterceptor
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.repository.AppThemeRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.repository.ProfileRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.resource.ImageResourceProviderImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.upload.AvatarUploaderImpl
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.GetAppThemeUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.GetTokensCountUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.GetUserProfileUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.SetAppThemeUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.SelectImageUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.SignOutUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.UpdateUserNameUseCaseImpl
@@ -46,6 +53,12 @@ internal object ProfileProvideModule {
     fun provideContentResolver(
         @ApplicationContext context: Context,
     ): ContentResolver = context.contentResolver
+
+    @Provides
+    @Singleton
+    fun provideProfileSharedPreferences(
+        @ApplicationContext context: Context,
+    ): SharedPreferences = context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
 
     @Provides
     @Singleton
@@ -90,6 +103,10 @@ internal abstract class ProfileModule {
 
     @Binds
     @Singleton
+    abstract fun bindAppThemeRepository(impl: AppThemeRepositoryImpl): AppThemeRepository
+
+    @Binds
+    @Singleton
     abstract fun bindImageResourceProvider(impl: ImageResourceProviderImpl): ImageResourceProvider
 
     @Binds
@@ -99,6 +116,14 @@ internal abstract class ProfileModule {
     @Binds
     @Singleton
     abstract fun bindGetUserProfileUseCase(impl: GetUserProfileUseCaseImpl): GetUserProfileUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindGetAppThemeUseCase(impl: GetAppThemeUseCaseImpl): GetAppThemeUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindSetAppThemeUseCase(impl: SetAppThemeUseCaseImpl): SetAppThemeUseCase
 
     @Binds
     @Singleton

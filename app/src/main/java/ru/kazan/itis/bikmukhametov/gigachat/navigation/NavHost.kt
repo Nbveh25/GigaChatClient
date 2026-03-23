@@ -170,6 +170,9 @@ fun AppNavigation(
             composable(NavRoutes.Profile) {
                 ProfileScreen(
                     onOpenDrawer = { scope.launch { drawerState.open() } },
+                    onThemeChange = { isDarkTheme ->
+                        appNavViewModel.setTheme(isDarkTheme)
+                    },
                     onSignOutClick = {
                         navController.navigate(NavRoutes.Auth) {
                             popUpTo(NavRoutes.ChatList) { inclusive = true }
