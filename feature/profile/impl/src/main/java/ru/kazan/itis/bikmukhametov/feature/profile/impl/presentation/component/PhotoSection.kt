@@ -14,18 +14,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.R
 
 @Composable
 fun PhotoSection(
+    photoUrl: String?,
+    isUploadingPhoto: Boolean,
     onPhotoClick: () -> Unit,
 ) {
     Card(
@@ -52,12 +58,30 @@ fun PhotoSection(
                     .clickable(onClick = onPhotoClick),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = stringResource(R.string.profile_photo_content_description),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(48.dp),
-                )
+                if (photoUrl.isNullOrBlank()) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = stringResource(R.string.profile_photo_content_description),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(48.dp),
+                    )
+                } else {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = stringResource(R.string.profile_photo_content_description),
+                        modifier = Modifier
+                            .size(104.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+
+                if (isUploadingPhoto) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        strokeWidth = 3.dp,
+                    )
+                }
             }
             Text(
                 text = stringResource(R.string.profile_change_photo),

@@ -1,5 +1,7 @@
 package ru.kazan.itis.bikmukhametov.feature.profile.impl.presentation.screen
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -43,11 +45,19 @@ fun ProfileScreen(
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val emptyValue = stringResource(R.string.profile_empty_value)
     val snackbarHostState = remember { SnackbarHostState() }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri ->
+        uri?.toString()?.let { viewModel.onIntent(ProfileIntent.PhotoSelected(it)) }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                ProfileEffect.OpenPhotoPicker -> onPhotoClick()
+                ProfileEffect.OpenPhotoPicker -> {
+                    photoPickerLauncher.launch("image/*")
+                    onPhotoClick()
+                }
                 ProfileEffect.SignedOut -> onSignOutClick()
                 is ProfileEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
             }
@@ -80,6 +90,8 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             PhotoSection(
+                photoUrl = uiState.photoUrl,
+                isUploadingPhoto = uiState.isUploadingPhoto,
                 onPhotoClick = { viewModel.onIntent(ProfileIntent.PhotoClicked) },
             )
             UserInfoSection(

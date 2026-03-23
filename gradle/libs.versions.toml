@@ -58,6 +58,7 @@ timber = "5.0.1"
 
 # Cloudinary
 cloudinaryAndroid = "3.1.2"
+coil = "2.7.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -122,6 +123,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 
 # Cloudinary
 cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

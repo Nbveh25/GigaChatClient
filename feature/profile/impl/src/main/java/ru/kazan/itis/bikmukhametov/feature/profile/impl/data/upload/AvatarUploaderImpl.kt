@@ -9,19 +9,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.BuildConfig
 import java.io.InputStream
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
 internal class AvatarUploaderImpl @Inject constructor(
-    @ApplicationContext
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : AvatarUploader {
 
     private companion object {
         const val TAG = "CloudinaryUploader"
         const val FOLDER_AVATARS = "avatars"
         const val CLOUD_NAME = "dsrqq4er2"
+        const val IMAGE_RESOURCE_TYPE = "image"
     }
 
     init {
@@ -62,8 +63,10 @@ internal class AvatarUploaderImpl @Inject constructor(
     private fun uploadOptions(userId: String) = mapOf(
         "public_id" to userId,
         "folder" to FOLDER_AVATARS,
+        "api_key" to BuildConfig.CLOUDINARY_API_KEY,
+        "api_secret" to BuildConfig.CLOUDINARY_API_SECRET,
         "overwrite" to true,
-        "resource_type" to "image"
+        "resource_type" to IMAGE_RESOURCE_TYPE
     )
 
     private fun setupCloudinary() {
