@@ -84,32 +84,46 @@ fun ChatListScreen(
                 .padding(paddingValues),
         ) {
             val isInitialLoading = uiState.isChatListLoading && uiState.chats.isEmpty()
-            if (isInitialLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (uiState.chats.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.chat_list_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(24.dp),
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                ) {
-                    items(
-                        items = uiState.chats,
-                        key = { it.id },
-                    ) { chat ->
-                        ChatListRow(
-                            title = chat.title,
-                            onClick = {
-                                viewModel.onIntent(ChatListIntent.ChatItemClicked(chat.id))
-                            },
-                        )
+
+            when {
+                isInitialLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+
+                uiState.chats.isEmpty() -> {
+
+                    val emptyText = if (uiState.isSearchActive) {
+                        stringResource(R.string.chat_list_search_empty, uiState.searchFieldText)
+                    } else {
+                        stringResource(R.string.chat_list_empty)
+                    }
+
+                    Text(
+                        text = emptyText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(24.dp),
+                    )
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                    ) {
+                        items(
+                            items = uiState.chats,
+                            key = { it.id },
+                        ) { chat ->
+                            ChatListRow(
+                                title = chat.title,
+                                onClick = {
+                                    viewModel.onIntent(ChatListIntent.ChatItemClicked(chat.id))
+                                },
+                            )
+                        }
                     }
                 }
             }

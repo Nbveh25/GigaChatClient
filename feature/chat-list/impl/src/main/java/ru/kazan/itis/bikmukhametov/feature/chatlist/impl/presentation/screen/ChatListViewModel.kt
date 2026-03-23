@@ -35,8 +35,30 @@ class ChatListViewModel @Inject constructor(
     private val appliedSearchQuery = MutableStateFlow("")
 
     init {
+        observeChatList()
+    }
+
+    override fun onIntent(action: ChatListIntent) {
+        when (action) {
+            is ChatListIntent.SearchTextChanged -> {
+                updateState { copy(searchFieldText = action.text) }
+            }
+
+            is ChatListIntent.SearchClicked -> onSearchClicked()
+
+            is ChatListIntent.CreateNewChatClicked -> createNewChat()
+
+            is ChatListIntent.ChatItemClicked -> {
+                emitEffect(ChatListEffect.NavigateToChat(action.chatId))
+            }
+        }
+    }
+
+    private fun observeChatList() {
         appliedSearchQuery
             .flatMapLatest { query ->
+                updateState { copy(isSearchActive = query.isNotEmpty()) }
+
                 if (query.isEmpty()) {
                     observeChatsUseCase()
                 } else {
@@ -54,30 +76,18 @@ class ChatListViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    override fun onIntent(action: ChatListIntent) {
-        when (action) {
-            is ChatListIntent.SearchTextChanged -> {
-                updateState { copy(searchFieldText = action.text) }
-            }
-
-            is ChatListIntent.SearchClicked -> onSearchClicked()
-
-            is ChatListIntent.CreateNewChatClicked -> createNewChat()
-
-            is ChatListIntent.ChatItemClicked -> viewModelScope.launch {
-                _effect.emit(ChatListEffect.NavigateToChat(action.chatId))
-            }
-        }
-    }
-
     private fun onSearchClicked() {
         val query = state.value.searchFieldText.trim()
+
+        // Если запрос пустой, сбрасываем поиск
         if (query.isEmpty()) {
             appliedSearchQuery.value = ""
+            updateState { copy(isSearchActive = false) }
             return
         }
+
         viewModelScope.launch {
-            updateState { copy(isChatListLoading = true) }
+            updateState { copy(isChatListLoading = true, isSearchActive = true) }
             appliedSearchQuery.value = query
         }
     }
@@ -88,13 +98,24 @@ class ChatListViewModel @Inject constructor(
             updateState { copy(isCreatingChat = true) }
             createChatUseCase()
                 .onSuccess { chatId ->
+                    // При создании нового чата сбрасываем поиск
                     appliedSearchQuery.value = ""
-                    updateState { copy(isCreatingChat = false) }
+                    updateState {
+                        copy(
+                            isCreatingChat = false,
+                            isSearchActive = false,
+                            searchFieldText = ""
+                        )
+                    }
                     _effect.emit(ChatListEffect.NavigateToChat(chatId))
                 }
                 .onFailure {
                     updateState { copy(isCreatingChat = false) }
                 }
         }
+    }
+
+    private fun emitEffect(effect: ChatListEffect) {
+        viewModelScope.launch { _effect.emit(effect) }
     }
 }
