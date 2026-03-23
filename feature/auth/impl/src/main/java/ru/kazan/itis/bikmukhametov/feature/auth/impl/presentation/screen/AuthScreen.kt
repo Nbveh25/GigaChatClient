@@ -122,31 +122,24 @@ private fun AuthForm(
     focusManager: FocusManager,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val emailPattern = Pattern.compile(
-        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$",
-        Pattern.CASE_INSENSITIVE,
-    )
-    val isEmailInvalid = state.emailInput.isNotBlank() &&
-        !emailPattern.matcher(state.emailInput).matches()
 
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // Поле Email
         AppTextField(
             value = state.emailInput,
             onValueChange = { onIntent(AuthIntent.EmailChanged(it)) },
             label = stringResource(R.string.email_label),
-            isError = isEmailInvalid,
-            supportingText = if (isEmailInvalid) {
+            isError = state.emailError != null,
+            supportingText = state.emailError?.let { errorText ->
                 {
                     Text(
-                        text = stringResource(R.string.error_invalid_email),
+                        text = errorText,
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
-            } else {
-                null
             },
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next,
@@ -158,6 +151,7 @@ private fun AuthForm(
             enabled = !state.isLoading,
         )
 
+        // Поле Пароля
         AppPasswordTextField(
             value = state.passwordInput,
             onValueChange = { onIntent(AuthIntent.PasswordChanged(it)) },
@@ -187,6 +181,7 @@ private fun AuthForm(
             enabled = !state.isLoading,
         )
 
+        // Чекбокс "Запомнить меня"
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -204,6 +199,7 @@ private fun AuthForm(
             )
         }
 
+        // Основная кнопка входа
         AppPrimaryButton(
             text = stringResource(R.string.auth_primary_button),
             onClick = { onIntent(AuthIntent.LoginButtonClicked) },

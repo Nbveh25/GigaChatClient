@@ -8,10 +8,12 @@ import javax.inject.Singleton
 import ru.kazan.itis.bikmukhametov.feature.auth.api.repository.AuthRepository
 import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.GetCurrentUserUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.SignInWithEmailPasswordUseCase
+import ru.kazan.itis.bikmukhametov.feature.auth.api.usecase.ValidateLoginUseCase
 import ru.kazan.itis.bikmukhametov.feature.auth.api.validation.InputValidator
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.data.repository.AuthRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.GetCurrentUserUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.SignInWithEmailPasswordUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.usecase.ValidateLoginUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.auth.impl.domain.validation.InputValidatorImpl
 
 @Module
@@ -35,4 +37,8 @@ internal abstract class AuthModule {
     @Binds
     @Singleton
     abstract fun bindGetCurrentUserUseCase(impl: GetCurrentUserUseCaseImpl): GetCurrentUserUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindValidateLoginUseCase(impl: ValidateLoginUseCaseImpl): ValidateLoginUseCase
 }

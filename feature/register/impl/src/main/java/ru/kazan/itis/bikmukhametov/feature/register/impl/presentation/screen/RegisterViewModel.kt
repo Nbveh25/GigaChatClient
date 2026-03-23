@@ -24,30 +24,13 @@ class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
     private val validateRegistrationUseCase: ValidateRegistrationUseCase,
     private val stringResourceProvider: StringResourceProvider,
-    private val inputValidator: InputValidator,
 ) : BaseViewModel<RegisterUiState, RegisterIntent>(RegisterUiState()) {
 
     private val _effect = MutableSharedFlow<RegisterEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<RegisterEffect> = _effect.asSharedFlow()
 
     init {
-        // Автоматически обновляем состояние кнопки при любом изменении полей
-        state
-            .map { s ->
-                validateRegistrationUseCase(s.emailInput, s.passwordInput, s.confirmPasswordInput)
-            }
-            .distinctUntilChanged()
-            .onEach { result ->
-                updateState {
-                    copy(
-                        emailError = result.emailError,
-                        passwordError = result.passwordError,
-                        confirmPasswordError = result.confirmPasswordError,
-                        isButtonEnabled = result.isValid
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
+        observeValidation()
     }
 
     override fun onIntent(action: RegisterIntent) {
@@ -86,6 +69,26 @@ class RegisterViewModel @Inject constructor(
             is RegisterIntent.RegisterButtonClicked -> performRegister()
             is RegisterIntent.RetryButtonClicked -> performRegister()
         }
+    }
+
+    private fun observeValidation() {
+        // Автоматически обновляем состояние кнопки при любом изменении полей
+        state
+            .map { s ->
+                validateRegistrationUseCase(s.emailInput, s.passwordInput, s.confirmPasswordInput)
+            }
+            .distinctUntilChanged()
+            .onEach { result ->
+                updateState {
+                    copy(
+                        emailError = result.emailError,
+                        passwordError = result.passwordError,
+                        confirmPasswordError = result.confirmPasswordError,
+                        isButtonEnabled = result.isValid
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun performRegister() {
