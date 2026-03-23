@@ -1,6 +1,7 @@
 package ru.kazan.itis.bikmukhametov.api.repository
 
 import ru.kazan.itis.bikmukhametov.api.model.UserModel
+import ru.kazan.itis.bikmukhametov.api.model.TokensCountModel
 import java.io.InputStream
 
 interface ProfileRepository {
@@ -13,5 +14,7 @@ interface ProfileRepository {
         inputStream: InputStream,
         fileName: String
     ): Result<String>
+
+    suspend fun getTokensBalance(): Result<TokensCountModel>
 
 }

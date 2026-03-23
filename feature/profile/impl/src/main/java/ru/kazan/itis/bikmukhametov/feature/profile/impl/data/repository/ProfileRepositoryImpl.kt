@@ -8,14 +8,19 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.tasks.await
 import ru.kazan.itis.bikmukhametov.api.model.UserModel
+import ru.kazan.itis.bikmukhametov.api.model.TokensCountModel
 import ru.kazan.itis.bikmukhametov.api.repository.ProfileRepository
 import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.api.BalanceDto
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.api.GigaChatTokensApi
+import kotlin.math.min
 import java.io.InputStream
 
 @Singleton
 internal class ProfileRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val avatarUploader: AvatarUploader
+    private val avatarUploader: AvatarUploader,
+    private val gigaChatTokensApi: GigaChatTokensApi,
 ) : ProfileRepository {
 
     override suspend fun getUserProfile(): Result<UserModel> {
@@ -93,4 +98,41 @@ internal class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getTokensBalance(): Result<TokensCountModel> {
+        return try {
+            Log.d(TAG, "getTokensBalance: start request /api/v1/balance")
+            val response = gigaChatTokensApi.getTokensBalance()
+            Log.d(TAG, "getTokensBalance: response balance items count=${response.balance.size}")
+            response.balance.forEachIndexed { index, item ->
+                Log.d(TAG, "getTokensBalance: item[$index] usage=${item.usage} value=${item.value}")
+            }
+
+            val balance = extractBalance(response.balance)
+                ?: return Result.failure(Exception("Не удалось получить баланс токенов: пустой или некорректный balance"))
+
+            Log.d(TAG, "getTokensBalance: selected balance=$balance")
+
+            Result.success(
+                TokensCountModel(
+                    tokens = balance,
+                ),
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "getTokensBalance: failed with ${e.javaClass.simpleName}: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    private fun extractBalance(items: List<BalanceDto>): Int? {
+        val value = items.firstOrNull { it.usage.equals(GIGACHAT_USAGE, ignoreCase = true) }?.value
+            ?: items.firstOrNull()?.value
+            ?: return null
+
+        return min(value, Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    private companion object {
+        private const val TAG = "ProfileRepositoryImpl"
+        private const val GIGACHAT_USAGE = "GigaChat"
+    }
 }

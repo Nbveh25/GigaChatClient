@@ -8,23 +8,34 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import jakarta.inject.Named
 import javax.inject.Singleton
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Converter
+import retrofit2.Retrofit
 import ru.kazan.itis.bikmukhametov.api.repository.ProfileRepository
 import ru.kazan.itis.bikmukhametov.api.resource.ImageResourceProvider
 import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import ru.kazan.itis.bikmukhametov.api.usecase.GetTokensCountUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.GetUserProfileUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SelectImageUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UpdateUserNameUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UploadProfilePhotoUseCase
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.api.GigaChatTokensApi
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.interceptor.GigaChatProfileInterceptor
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.repository.ProfileRepositoryImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.resource.ImageResourceProviderImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.data.upload.AvatarUploaderImpl
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.GetTokensCountUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.GetUserProfileUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.SelectImageUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.SignOutUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.UpdateUserNameUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.domain.usecase.UploadProfilePhotoUseCaseImpl
+import ru.kazan.itis.bikmukhametov.network.BuildConfig
+import ru.kazan.itis.bikmukhametov.network.auth.token.GigaChatAuthenticator
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,6 +46,38 @@ internal object ProfileProvideModule {
     fun provideContentResolver(
         @ApplicationContext context: Context,
     ): ContentResolver = context.contentResolver
+
+    @Provides
+    @Singleton
+    @Named("ProfileTokensOkHttp")
+    fun provideProfileTokensOkHttp(
+        profileInterceptor: GigaChatProfileInterceptor,
+        authenticator: GigaChatAuthenticator,
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(profileInterceptor)
+        .authenticator(authenticator)
+        .addInterceptor(
+            HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            },
+        )
+        .build()
+
+    @Provides
+    @Singleton
+    fun provideGigaChatTokensApi(
+        @Named("ProfileTokensOkHttp") okHttpClient: OkHttpClient,
+        converterFactory: Converter.Factory,
+    ): GigaChatTokensApi {
+        val baseUrl = BuildConfig.API_BASE_URL
+        val url = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
+        return Retrofit.Builder()
+            .baseUrl(url)
+            .client(okHttpClient)
+            .addConverterFactory(converterFactory)
+            .build()
+            .create(GigaChatTokensApi::class.java)
+    }
 }
 
 @Module
@@ -56,6 +99,10 @@ internal abstract class ProfileModule {
     @Binds
     @Singleton
     abstract fun bindGetUserProfileUseCase(impl: GetUserProfileUseCaseImpl): GetUserProfileUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindGetTokensCountUseCase(impl: GetTokensCountUseCaseImpl): GetTokensCountUseCase
 
     @Binds
     @Singleton

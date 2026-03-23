@@ -1,12 +1,14 @@
 package ru.kazan.itis.bikmukhametov.feature.profile.impl.presentation.screen
 
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import ru.kazan.itis.bikmukhametov.api.usecase.GetTokensCountUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.GetUserProfileUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SelectImageUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
@@ -16,6 +18,7 @@ import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
+    private val getTokensCountUseCase: GetTokensCountUseCase,
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val updateUserNameUseCase: UpdateUserNameUseCase,
     private val selectImageUseCase: SelectImageUseCase,
@@ -79,12 +82,33 @@ class ProfileViewModel @Inject constructor(
                             isLoadingProfile = false,
                         )
                     }
+                    loadTokensCount()
                 }
                 .onFailure { error ->
                     updateState { copy(isLoadingProfile = false) }
                     emitEffect(
                         ProfileEffect.ShowError(
                             error.message ?: "Не удалось загрузить профиль",
+                        ),
+                    )
+                }
+        }
+    }
+
+    private fun loadTokensCount() {
+        viewModelScope.launch {
+            Log.d(TAG, "loadTokensCount: start")
+            getTokensCountUseCase()
+                .onSuccess { count ->
+                    Log.d(TAG, "loadTokensCount: success tokens=${count.tokens}")
+                    updateState { copy(tokens = count.tokens.toString()) }
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "loadTokensCount: failure ${error.javaClass.simpleName}: ${error.message}", error)
+                    updateState { copy(tokens = null) }
+                    emitEffect(
+                        ProfileEffect.ShowError(
+                            error.message ?: "Не удалось загрузить баланс токенов",
                         ),
                     )
                 }
@@ -132,5 +156,9 @@ class ProfileViewModel @Inject constructor(
 
     private fun emitEffect(effect: ProfileEffect) {
         viewModelScope.launch { _effect.emit(effect) }
+    }
+
+    private companion object {
+        private const val TAG = "ProfileViewModel"
     }
 }

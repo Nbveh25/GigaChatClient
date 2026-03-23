@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
@@ -58,6 +59,7 @@ dependencies {
     implementation(project(":core:auth"))
     implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:network"))
     
     implementation(project(":feature:auth:api"))
     implementation(project(":feature:profile:api"))
@@ -74,7 +76,11 @@ dependencies {
     // Cloudinary
     implementation(libs.cloudinary.android)
 
-    
+    // Retrofit
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.retrofit)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.core.ktx)
     implementation(platform(libs.androidx.compose.bom))
