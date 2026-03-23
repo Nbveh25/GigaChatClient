@@ -3,24 +3,18 @@ package ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.screen
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
-import ru.kazan.itis.bikmukhametov.feature.chatlist.api.model.ChatModel
 import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.CreateChatUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.LoadChatsBySearchUseCase
-import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.ObserveChatsUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatlist.api.usecase.LoadChatsUseCase
 
 @HiltViewModel
 class ChatListViewModel @Inject constructor(
-    private val observeChatsUseCase: ObserveChatsUseCase,
+    private val loadChatsUseCase: LoadChatsUseCase,
     private val loadChatsBySearchUseCase: LoadChatsBySearchUseCase,
     private val createChatUseCase: CreateChatUseCase,
 ) : BaseViewModel<ChatListUiState, ChatListIntent>(ChatListUiState()) {
@@ -28,14 +22,11 @@ class ChatListViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<ChatListEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<ChatListEffect> = _effect.asSharedFlow()
 
-    /**
-     * Пустая строка — показываем полный список из БД (в т.ч. актуальные title после ответа GigaChat).
-     * Иначе — результаты поиска по FTS.
-     */
-    private val appliedSearchQuery = MutableStateFlow("")
+    private val pageSize = 20
+    private var loadedItemsCount = 0
 
     init {
-        observeChatList()
+        loadInitialPage()
     }
 
     override fun onIntent(action: ChatListIntent) {
@@ -46,6 +37,8 @@ class ChatListViewModel @Inject constructor(
 
             is ChatListIntent.SearchClicked -> onSearchClicked()
 
+            is ChatListIntent.LoadNextPage -> loadNextPage()
+
             is ChatListIntent.CreateNewChatClicked -> createNewChat()
 
             is ChatListIntent.ChatItemClicked -> {
@@ -54,41 +47,112 @@ class ChatListViewModel @Inject constructor(
         }
     }
 
-    private fun observeChatList() {
-        appliedSearchQuery
-            .flatMapLatest { query ->
-                updateState { copy(isSearchActive = query.isNotEmpty()) }
+    private fun loadInitialPage() {
+        if (state.value.isChatListLoading) return
 
-                if (query.isEmpty()) {
-                    observeChatsUseCase()
-                } else {
-                    flow {
-                        val list = loadChatsBySearchUseCase(query).getOrElse { emptyList() }
-                        emit(list)
+        viewModelScope.launch {
+            updateState {
+                copy(
+                    isChatListLoading = true,
+                    isNextPageLoading = false,
+                    canLoadMore = true,
+                )
+            }
+
+            loadedItemsCount = 0
+
+            loadChatsUseCase(offset = 0, limit = pageSize)
+                .onSuccess { list ->
+                    loadedItemsCount = list.size
+                    updateState {
+                        copy(
+                            chats = list,
+                            isChatListLoading = false,
+                            isNextPageLoading = false,
+                            canLoadMore = list.size == pageSize,
+                            isSearchActive = false,
+                        )
                     }
                 }
-            }
-            .onEach { list ->
-                updateState {
-                    copy(chats = list, isChatListLoading = false)
+                .onFailure {
+                    updateState {
+                        copy(
+                            chats = emptyList(),
+                            isChatListLoading = false,
+                            isNextPageLoading = false,
+                            canLoadMore = false,
+                            isSearchActive = false,
+                        )
+                    }
                 }
-            }
-            .launchIn(viewModelScope)
+        }
+    }
+
+    private fun loadNextPage() {
+        val currentState = state.value
+
+        if (currentState.isSearchActive || currentState.isChatListLoading || currentState.isNextPageLoading || !currentState.canLoadMore) {
+            return
+        }
+
+        viewModelScope.launch {
+            updateState { copy(isNextPageLoading = true) }
+
+            loadChatsUseCase(offset = loadedItemsCount, limit = pageSize)
+                .onSuccess { list ->
+                    if (list.isEmpty()) {
+                        updateState { copy(isNextPageLoading = false, canLoadMore = false) }
+                        return@onSuccess
+                    }
+
+                    loadedItemsCount += list.size
+                    updateState {
+                        copy(
+                            chats = chats + list,
+                            isNextPageLoading = false,
+                            canLoadMore = list.size == pageSize,
+                        )
+                    }
+                }
+                .onFailure {
+                    updateState { copy(isNextPageLoading = false) }
+                }
+        }
     }
 
     private fun onSearchClicked() {
         val query = state.value.searchFieldText.trim()
 
-        // Если запрос пустой, сбрасываем поиск
         if (query.isEmpty()) {
-            appliedSearchQuery.value = ""
-            updateState { copy(isSearchActive = false) }
+            loadInitialPage()
             return
         }
 
         viewModelScope.launch {
-            updateState { copy(isChatListLoading = true, isSearchActive = true) }
-            appliedSearchQuery.value = query
+            updateState { copy(isChatListLoading = true, isSearchActive = true, canLoadMore = false) }
+            loadChatsBySearchUseCase(query)
+                .onSuccess { list ->
+                    updateState {
+                        copy(
+                            chats = list,
+                            isChatListLoading = false,
+                            isSearchActive = true,
+                            isNextPageLoading = false,
+                            canLoadMore = false,
+                        )
+                    }
+                }
+                .onFailure {
+                    updateState {
+                        copy(
+                            chats = emptyList(),
+                            isChatListLoading = false,
+                            isSearchActive = true,
+                            isNextPageLoading = false,
+                            canLoadMore = false,
+                        )
+                    }
+                }
         }
     }
 
@@ -98,8 +162,7 @@ class ChatListViewModel @Inject constructor(
             updateState { copy(isCreatingChat = true) }
             createChatUseCase()
                 .onSuccess { chatId ->
-                    // При создании нового чата сбрасываем поиск
-                    appliedSearchQuery.value = ""
+                    loadInitialPage()
                     updateState {
                         copy(
                             isCreatingChat = false,

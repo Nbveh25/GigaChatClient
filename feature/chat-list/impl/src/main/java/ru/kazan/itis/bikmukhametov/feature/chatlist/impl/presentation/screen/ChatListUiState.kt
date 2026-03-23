@@ -7,5 +7,7 @@ data class ChatListUiState(
     val isCreatingChat: Boolean = false,
     val chats: List<ChatModel> = emptyList(),
     val isChatListLoading: Boolean = false,
+    val isNextPageLoading: Boolean = false,
+    val canLoadMore: Boolean = true,
     val isSearchActive: Boolean = false,
 )
