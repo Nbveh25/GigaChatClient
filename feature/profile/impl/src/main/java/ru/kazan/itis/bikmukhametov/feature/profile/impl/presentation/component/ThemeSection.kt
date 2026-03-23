@@ -23,6 +23,7 @@ import ru.kazan.itis.bikmukhametov.feature.profile.impl.R
 
 @Composable
 fun ThemeSection(
+    checked: Boolean,
     onThemeChange: (Boolean) -> Unit,
 ) {
     Card(
@@ -55,7 +56,7 @@ fun ThemeSection(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Switch(
-                checked = false,
+                checked = checked,
                 onCheckedChange = onThemeChange,
             )
         }

@@ -16,7 +16,12 @@ import androidx.compose.ui.unit.dp
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.R
 
 @Composable
-fun UserInfoSection() {
+fun UserInfoSection(
+    userName: String,
+    email: String,
+    phone: String,
+    tokens: String,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -32,19 +37,19 @@ fun UserInfoSection() {
         ) {
             InfoRow(
                 label = stringResource(R.string.profile_user_name),
-                value = stringResource(R.string.profile_empty_value),
+                value = userName,
             )
             InfoRow(
                 label = stringResource(R.string.profile_email),
-                value = stringResource(R.string.profile_empty_value),
+                value = email,
             )
             InfoRow(
                 label = stringResource(R.string.profile_phone),
-                value = stringResource(R.string.profile_empty_value),
+                value = phone,
             )
             InfoRow(
                 label = stringResource(R.string.profile_tokens),
-                value = stringResource(R.string.profile_empty_value),
+                value = tokens,
             )
         }
     }

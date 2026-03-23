@@ -1,0 +1,96 @@
+package ru.kazan.itis.bikmukhametov.feature.profile.impl.data.repository
+
+import android.util.Log
+import androidx.core.net.toUri
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import kotlinx.coroutines.tasks.await
+import ru.kazan.itis.bikmukhametov.api.model.UserModel
+import ru.kazan.itis.bikmukhametov.api.repository.ProfileRepository
+import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import java.io.InputStream
+
+@Singleton
+internal class ProfileRepositoryImpl @Inject constructor(
+    private val firebaseAuth: FirebaseAuth,
+    private val avatarUploader: AvatarUploader
+) : ProfileRepository {
+
+    override suspend fun getUserProfile(): Result<UserModel> {
+        return try {
+            val user = firebaseAuth.currentUser
+            if (user == null) {
+                Result.failure(Exception("Пользователь не авторизован"))
+            } else {
+                val profile = UserModel(
+                    uid = user.uid,
+                    name = user.displayName,
+                    email = user.email,
+                    phone = user.phoneNumber,
+                    photoUrl = user.photoUrl?.toString()
+                )
+                Result.success(profile)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateUserName(name: String): Result<Unit> {
+        return try {
+            val user = firebaseAuth.currentUser
+            if (user == null) {
+                Result.failure(Exception("Пользователь не авторизован"))
+            } else {
+                val profileUpdate = UserProfileChangeRequest.Builder()
+                    .setDisplayName(name)
+                    .build()
+                user.updateProfile(profileUpdate).await()
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadProfilePhoto(
+        inputStream: InputStream,
+        fileName: String
+    ): Result<String> {
+        return try {
+            val user = firebaseAuth.currentUser
+            if (user == null) {
+                Result.failure(Exception("Пользователь не авторизован"))
+            } else {
+
+                val uploadResult = avatarUploader.uploadAvatar(
+                    inputStream = inputStream,
+                    fileName = fileName,
+                    userId = user.uid
+                )
+
+                Log.d("ProfileRepositoryImpl", "URL загруженного файла: ${uploadResult.getOrNull()}")
+
+                if (uploadResult.isFailure) {
+                    return uploadResult
+                }
+
+                val photoUrl = uploadResult.getOrNull() ?: return Result.failure(
+                    Exception("Не удалось получить URL загруженного файла")
+                )
+
+                val profileUpdate = UserProfileChangeRequest.Builder()
+                    .setPhotoUri(photoUrl.toUri())
+                    .build()
+                user.updateProfile(profileUpdate).await()
+
+                Result.success(photoUrl)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+}
