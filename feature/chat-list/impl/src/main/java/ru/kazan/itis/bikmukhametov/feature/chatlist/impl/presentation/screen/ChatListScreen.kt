@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.R
+import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.component.ChatListFloatingActionButton
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.component.ChatListRow
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.component.ChatListTopBar
 
@@ -56,28 +57,13 @@ fun ChatListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (!uiState.isCreatingChat) {
-                        viewModel.onIntent(ChatListIntent.CreateNewChatClicked)
-                    }
-                },
-            ) {
-                if (uiState.isCreatingChat) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(R.string.chat_list_fab_new),
-                    )
-                }
-            }
+            ChatListFloatingActionButton(
+                isCreating = uiState.isCreatingChat,
+                onClick = { viewModel.onIntent(ChatListIntent.CreateNewChatClicked) }
+            )
         },
     ) { paddingValues ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,39 +78,22 @@ fun ChatListScreen(
 
                 uiState.chats.isEmpty() -> {
 
-                    val emptyText = if (uiState.isSearchActive) {
-                        stringResource(R.string.chat_list_search_empty, uiState.searchFieldText)
-                    } else {
-                        stringResource(R.string.chat_list_empty)
-                    }
-
-                    Text(
-                        text = emptyText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(24.dp),
+                    ChatListEmptyState(
+                        isSearchActive = uiState.isSearchActive,
+                        searchQuery = uiState.searchFieldText
                     )
+                    
                 }
 
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(vertical = 8.dp),
-                    ) {
-                        items(
-                            items = uiState.chats,
-                            key = { it.id },
-                        ) { chat ->
-                            ChatListRow(
-                                title = chat.title,
-                                onClick = {
-                                    viewModel.onIntent(ChatListIntent.ChatItemClicked(chat.id))
-                                },
-                            )
+
+                    ChatListContent(
+                        chats = uiState.chats,
+                        onChatClick = { id ->
+                            viewModel.onIntent(ChatListIntent.ChatItemClicked(id))
                         }
-                    }
+                    )
+
                 }
             }
         }
