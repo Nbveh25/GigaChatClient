@@ -34,8 +34,11 @@ include(":feature:auth:impl")
 include(":feature:register:api")
 include(":feature:register:impl")
 
-include(":feature:chat-list:impl")
 include(":feature:chat-list:api")
+include(":feature:chat-list:impl")
 
 include(":feature:chat-detail:api")
 include(":feature:chat-detail:impl")
+
+include(":feature:profile:api")
+include(":feature:profile:impl")
