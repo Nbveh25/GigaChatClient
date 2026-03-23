@@ -31,10 +31,7 @@ android {
         val authBaseUrl = localProperties.getProperty("auth.base.url", "")
         val authKey = localProperties.getProperty("auth.key", "")
 
-        val apiBaseUrl = localProperties.getProperty(
-            "api.base.url",
-            "https://gigachat.devices.sberbank.ru"
-        )
+        val apiBaseUrl = localProperties.getProperty("api.base.url", "")
 
         buildConfigField("String", "AUTH_BASE_URL", "\"$authBaseUrl\"")
         buildConfigField("String", "AUTH_KEY", "\"$authKey\"")
