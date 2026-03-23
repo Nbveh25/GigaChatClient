@@ -1,6 +1,6 @@
 package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen
 
-sealed interface ChatDetailIntent {
+internal sealed interface ChatDetailIntent {
     data class InputTextChanged(val value: String) : ChatDetailIntent
     data object SendClicked : ChatDetailIntent
     data object ClearInputClicked : ChatDetailIntent

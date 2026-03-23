@@ -3,36 +3,32 @@ package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.ChatDetailConstants
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatMessageModel
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GetChatByIdUseCase
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GetChatMessagesUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatByIdUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.InsertChatMessageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatMessagesUseCase
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.SendChatMessageUseCase
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.UpdateChatTitleUseCase
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.ChatMessageItem
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.RequestAssistantReplyUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.toItem
-import timber.log.Timber
 
 @HiltViewModel
 class ChatDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val sendChatMessageUseCase: SendChatMessageUseCase,
-    private val getChatByIdUseCase: GetChatByIdUseCase,
-    private val observeChatMessagesUseCase: ObserveChatMessagesUseCase,
-    private val getChatMessagesUseCase: GetChatMessagesUseCase,
+    private val observeChatByIdUseCase: ObserveChatByIdUseCase,
     private val insertChatMessageUseCase: InsertChatMessageUseCase,
-    private val updateChatTitleUseCase: UpdateChatTitleUseCase,
+    private val observeChatMessagesUseCase: ObserveChatMessagesUseCase,
+    private val requestAssistantReplyUseCase: RequestAssistantReplyUseCase,
 ) : BaseViewModel<ChatDetailUiState, ChatDetailIntent>(ChatDetailUiState()) {
 
     private val chatId: String = savedStateHandle.get<String>(CHAT_ID_ARG) ?: ""
@@ -41,191 +37,89 @@ class ChatDetailViewModel @Inject constructor(
     val effect: SharedFlow<ChatDetailEffect> = _effect.asSharedFlow()
 
     init {
-        val chatIdArg = savedStateHandle.get<String>(CHAT_ID_ARG)
-        val title = chatIdArg?.let { ChatDetailMocks.defaultChatTitle(it) } ?: ""
-
-        Timber.d("ChatDetail init: chatId=$chatIdArg, title=$title")
-
-        if (state.value.chatTitle.isEmpty() && title.isNotEmpty()) {
-            updateState { copy(chatTitle = title) }
-        }
-
-        if (chatId.isNotBlank()) {
-            viewModelScope.launch {
-                val chat = getChatByIdUseCase(chatId)
-                if (chat != null) {
-                    updateState {
-                        copy(chatTitle = chat.title)
-                    }
-                }
-            }
-
-            observeChatMessagesUseCase(chatId)
-                .onEach { messages ->
-                    updateState {
-                        copy(messages = messages.map {
-                            it.toItem()
-                        })
-                    }
-                }
-                .launchIn(viewModelScope)
-        }
+        observeChatData()
     }
 
     override fun onIntent(action: ChatDetailIntent) {
         when (action) {
-            is ChatDetailIntent.InputTextChanged -> updateState {
-                copy(inputText = action.value)
-            }
-
+            is ChatDetailIntent.InputTextChanged -> updateState { copy(inputText = action.value) }
             is ChatDetailIntent.SendClicked -> send()
-
             is ChatDetailIntent.ClearInputClicked -> updateState {
                 copy(inputText = "")
             }
-
-            is ChatDetailIntent.RetryClicked -> retry()
-
+            is ChatDetailIntent.RetryClicked -> {
+                sendToGigaChat(state.value.pendingRetryText)
+            }
             is ChatDetailIntent.ShareAssistantText -> {
-                shareText(action)
+                emitEffect(ChatDetailEffect.ShareText(action.text))
             }
         }
+    }
+
+    private fun observeChatData() {
+        if (chatId.isBlank()) return
+
+        // заголовок
+        observeChatByIdUseCase(chatId)
+            .onEach { chat -> updateState { copy(chatTitle = chat?.title ?: chatTitle) } }
+            .launchIn(viewModelScope)
+
+        // сообщения
+        observeChatMessagesUseCase(chatId)
+            .map { messages -> messages.map { it.toItem() } }
+            .flowOn(Dispatchers.Default)
+            .onEach { items -> updateState { copy(messages = items) } }
+            .launchIn(viewModelScope)
     }
 
     private fun send() {
-        val current = state.value
-        val trimmed = current.inputText.trim()
-        if (trimmed.isEmpty() || current.isGenerating) return
-        if (chatId.isBlank()) {
-            Timber.w("ChatDetail send: empty chatId")
-            return
-        }
+        val text = state.value.inputText.trim()
+        if (text.isEmpty() || state.value.isGenerating || chatId.isBlank()) return
 
         viewModelScope.launch {
-            updateState {
-                copy(
-                    inputText = "",
-                    generationError = false,
-                    generationErrorMessage = null,
-                    pendingRetryText = null,
-                )
-            }
-            insertChatMessageUseCase(
-                ChatMessageModel(
-                    id = UUID.randomUUID().toString(),
-                    chatId = chatId,
-                    role = USER_ROLE,
-                    text = trimmed,
-                    createdAtEpochMillis = System.currentTimeMillis(),
-                ),
+            updateState { copy(inputText = "", generationError = false, pendingRetryText = null) }
+
+            val userMsg = ChatMessageModel(
+                id = UUID.randomUUID().toString(),
+                chatId = chatId,
+                role = USER_ROLE,
+                text = text,
+                createdAtEpochMillis = System.currentTimeMillis(),
             )
-            sendToGigaChat()
+
+            insertChatMessageUseCase(userMsg)
+
+            sendToGigaChat(text)
         }
     }
 
-    private fun retry() {
-        if (state.value.pendingRetryText == null) return
-        sendToGigaChat()
-    }
-
-    private fun sendToGigaChat() {
-        if (state.value.isGenerating) return
+    private fun sendToGigaChat(retryText: String?) {
         if (chatId.isBlank()) return
 
         viewModelScope.launch {
-            updateState {
-                copy(
-                    isGenerating = true,
-                    generationError = false,
-                    generationErrorMessage = null,
-                    pendingRetryText = null,
-                )
-            }
-            val dbMessages = getChatMessagesUseCase(chatId)
-            val lastUserMessage = dbMessages.lastOrNull { it.role == USER_ROLE }?.text
-            if (lastUserMessage.isNullOrBlank()) {
-                updateState { copy(isGenerating = false) }
-                return@launch
-            }
-            val apiMessages = dbMessages.map { it.role to it.text }
+            updateState { copy(isGenerating = true, generationError = false) }
 
-            Timber.d("ChatDetail sendToGigaChat: messagesCount=%d", apiMessages.size)
-
-            sendChatMessageUseCase(apiMessages)
-                .onSuccess { assistantText ->
-
-                    Timber.d("ChatDetail success: responseLength=%d", assistantText.length)
-
-                    val isFirstAssistantReply = dbMessages.none { it.role == ASSISTANT_ROLE }
-                    insertChatMessageUseCase(
-                        ChatMessageModel(
-                            id = UUID.randomUUID().toString(),
-                            chatId = chatId,
-                            role = ASSISTANT_ROLE,
-                            text = assistantText,
-                            createdAtEpochMillis = System.currentTimeMillis(),
-                        ),
-                    )
-                    val newTitle = if (isFirstAssistantReply) {
-                        val t = chatTitleFromAssistantReply(assistantText)
-                        updateChatTitleUseCase(chatId, t)
-                        t
-                    } else {
-                        null
-                    }
-                    updateState {
-                        copy(
-                            isGenerating = false,
-                            generationError = false,
-                            generationErrorMessage = null,
-                            pendingRetryText = null,
-                            chatTitle = newTitle ?: chatTitle,
-                        )
-                    }
-                }
-                .onFailure {
-                    val errorMsg = it.message ?: it.javaClass.simpleName
-
-                    Timber.e(it, "ChatDetail failure: %s", errorMsg)
-
+            requestAssistantReplyUseCase(chatId)
+                .onSuccess { updateState { copy(isGenerating = false) } }
+                .onFailure { e ->
                     updateState {
                         copy(
                             isGenerating = false,
                             generationError = true,
-                            generationErrorMessage = errorMsg,
-                            pendingRetryText = lastUserMessage,
+                            generationErrorMessage = e.message,
+                            pendingRetryText = retryText
                         )
                     }
                 }
         }
     }
 
-    private fun shareText(action: ChatDetailIntent.ShareAssistantText) {
-        viewModelScope.launch {
-            _effect.emit(ChatDetailEffect.ShareText(action.text))
-        }
-    }
-
-    private fun chatTitleFromAssistantReply(assistantText: String): String {
-        val line = assistantText.replace('\n', ' ').trim()
-        if (line.isEmpty()) {
-            return state.value.chatTitle.ifBlank { ChatDetailConstants.DEFAULT_CHAT_TITLE }
-        }
-        val words = line.split(Regex("\\s+")).filter { it.isNotEmpty() }.take(TITLE_MAX_WORDS)
-        var title = words.joinToString(" ")
-        if (title.length > TITLE_MAX_CHARS) {
-            title =
-                title.take(TITLE_MAX_CHARS).trimEnd { it.isWhitespace() || it == ',' || it == '.' }
-            if (title.isEmpty()) title = line.take(TITLE_MAX_CHARS)
-        }
-        return title
+    private fun emitEffect(effect: ChatDetailEffect) {
+        viewModelScope.launch { _effect.emit(effect) }
     }
 
     private companion object {
         private const val CHAT_ID_ARG = "chatId"
-        private const val TITLE_MAX_WORDS = 6
-        private const val TITLE_MAX_CHARS = 20
-        private const val ASSISTANT_ROLE = "assistant"
         private const val USER_ROLE = "user"
     }
 }

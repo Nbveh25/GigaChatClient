@@ -4,16 +4,20 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GetChatByIdUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GenerateChatTitleUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatByIdUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.GetChatMessagesUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.InsertChatMessageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.ObserveChatMessagesUseCase
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.RequestAssistantReplyUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.SendChatMessageUseCase
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.UpdateChatTitleUseCase
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GetChatByIdUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GenerateChatTitleUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.ObserveChatByIdUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.GetChatMessagesUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.InsertChatMessageUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.ObserveChatMessagesUseCaseImpl
+import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.RequestAssistantReplyUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.SendChatMessageUseCaseImpl
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.UpdateChatTitleUseCaseImpl
 
@@ -22,20 +26,27 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.domain.usecase.Update
 internal abstract class ChatDetailModule {
 
     @Binds
-    abstract fun bindGetChatById(impl: GetChatByIdUseCaseImpl): GetChatByIdUseCase
+    abstract fun bindRequestAssistantReplyUseCase(impl: RequestAssistantReplyUseCaseImpl): RequestAssistantReplyUseCase
 
     @Binds
-    abstract fun bindObserveChatMessages(impl: ObserveChatMessagesUseCaseImpl): ObserveChatMessagesUseCase
+    abstract fun bindObserveChatByIdUseCase(impl: ObserveChatByIdUseCaseImpl): ObserveChatByIdUseCase
+
 
     @Binds
-    abstract fun bindGetChatMessages(impl: GetChatMessagesUseCaseImpl): GetChatMessagesUseCase
+    abstract fun bindObserveChatMessagesUseCase(impl: ObserveChatMessagesUseCaseImpl): ObserveChatMessagesUseCase
 
     @Binds
-    abstract fun bindInsertChatMessage(impl: InsertChatMessageUseCaseImpl): InsertChatMessageUseCase
+    abstract fun bindGetChatMessagesUseCase(impl: GetChatMessagesUseCaseImpl): GetChatMessagesUseCase
 
     @Binds
-    abstract fun bindUpdateChatTitle(impl: UpdateChatTitleUseCaseImpl): UpdateChatTitleUseCase
+    abstract fun bindInsertChatMessageUseCase(impl: InsertChatMessageUseCaseImpl): InsertChatMessageUseCase
 
     @Binds
-    abstract fun bindSendChatMessage(impl: SendChatMessageUseCaseImpl): SendChatMessageUseCase
+    abstract fun bindUpdateChatTitleUseCase(impl: UpdateChatTitleUseCaseImpl): UpdateChatTitleUseCase
+
+    @Binds
+    abstract fun bindSendChatMessageUseCase(impl: SendChatMessageUseCaseImpl): SendChatMessageUseCase
+
+    @Binds
+    abstract fun bindGenerateChatTitleUseCase(impl: GenerateChatTitleUseCaseImpl): GenerateChatTitleUseCase
 }

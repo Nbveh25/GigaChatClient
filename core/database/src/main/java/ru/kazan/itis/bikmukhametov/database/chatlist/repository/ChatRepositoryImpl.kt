@@ -40,6 +40,8 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun getChatById(id: String): ChatEntity? = chatDao.getById(id)
 
+    override fun observeChatById(id: String): Flow<ChatEntity?> = chatDao.observeById(id)
+
     override fun observeMessages(chatId: String): Flow<List<ChatMessageEntity>> =
         chatMessageDao.observeByChatId(chatId)
 

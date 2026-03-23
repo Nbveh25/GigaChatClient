@@ -33,6 +33,9 @@ interface ChatDao {
     @Query("SELECT * FROM chats WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): ChatEntity?
 
+    @Query("SELECT * FROM chats WHERE id = :id LIMIT 1")
+    fun observeById(id: String): Flow<ChatEntity?>
+
     @Query("UPDATE chats SET title = :title WHERE id = :id")
     suspend fun updateTitle(id: String, title: String)
 }

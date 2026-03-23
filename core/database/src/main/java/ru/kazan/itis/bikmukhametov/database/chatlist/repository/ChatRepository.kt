@@ -16,6 +16,8 @@ interface ChatRepository {
 
     suspend fun getChatById(id: String): ChatEntity?
 
+    fun observeChatById(id: String): Flow<ChatEntity?>
+
     fun observeMessages(chatId: String): Flow<List<ChatMessageEntity>>
 
     suspend fun getMessagesForChat(chatId: String): List<ChatMessageEntity>

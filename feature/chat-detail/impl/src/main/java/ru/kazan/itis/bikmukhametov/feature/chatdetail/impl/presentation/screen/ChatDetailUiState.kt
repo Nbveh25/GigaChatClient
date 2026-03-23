@@ -2,7 +2,7 @@ package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen
 
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.item.ChatMessageItem
 
-data class ChatDetailUiState(
+internal data class ChatDetailUiState(
     val chatTitle: String = "Новый чат",
     val messages: List<ChatMessageItem> = emptyList(),
     val inputText: String = "",
