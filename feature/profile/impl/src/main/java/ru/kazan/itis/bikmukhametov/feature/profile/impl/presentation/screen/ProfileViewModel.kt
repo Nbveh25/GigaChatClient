@@ -10,12 +10,14 @@ import kotlinx.coroutines.launch
 import ru.kazan.itis.bikmukhametov.api.usecase.GetUserProfileUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SelectImageUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
+import ru.kazan.itis.bikmukhametov.api.usecase.UpdateUserNameUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UploadProfilePhotoUseCase
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getUserProfileUseCase: GetUserProfileUseCase,
+    private val updateUserNameUseCase: UpdateUserNameUseCase,
     private val selectImageUseCase: SelectImageUseCase,
     private val uploadProfilePhotoUseCase: UploadProfilePhotoUseCase,
     private val signOutUseCase: SignOutUseCase,
@@ -31,10 +33,33 @@ class ProfileViewModel @Inject constructor(
     override fun onIntent(action: ProfileIntent) {
         when (action) {
             ProfileIntent.LoadProfile -> loadProfile()
+            is ProfileIntent.UpdateUserName -> updateUserName(action.name)
             ProfileIntent.PhotoClicked -> emitEffect(ProfileEffect.OpenPhotoPicker)
             is ProfileIntent.PhotoSelected -> uploadPhoto(action.imageUriString)
             is ProfileIntent.ThemeChanged -> updateState { copy(isDarkTheme = action.isDarkTheme) }
             ProfileIntent.SignOutClicked -> signOut()
+        }
+    }
+
+    private fun updateUserName(name: String) {
+        val trimmedName = name.trim()
+        if (trimmedName.isEmpty() || state.value.isUpdatingUserName) return
+
+        viewModelScope.launch {
+            updateState { copy(isUpdatingUserName = true) }
+            updateUserNameUseCase(trimmedName)
+                .onSuccess {
+                    updateState { copy(isUpdatingUserName = false) }
+                    loadProfile()
+                }
+                .onFailure { error ->
+                    updateState { copy(isUpdatingUserName = false) }
+                    emitEffect(
+                        ProfileEffect.ShowError(
+                            error.message ?: "Не удалось обновить имя пользователя",
+                        ),
+                    )
+                }
         }
     }
 

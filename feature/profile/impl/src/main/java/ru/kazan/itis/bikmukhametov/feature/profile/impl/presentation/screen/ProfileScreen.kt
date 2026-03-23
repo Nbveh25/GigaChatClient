@@ -87,6 +87,9 @@ fun ProfileScreen(
                 email = uiState.email ?: emptyValue,
                 phone = uiState.phone ?: emptyValue,
                 tokens = uiState.tokens ?: emptyValue,
+                emptyValue = emptyValue,
+                isUpdatingUserName = uiState.isUpdatingUserName,
+                onUpdateUserName = { viewModel.onIntent(ProfileIntent.UpdateUserName(it)) },
             )
             ThemeSection(
                 checked = uiState.isDarkTheme,

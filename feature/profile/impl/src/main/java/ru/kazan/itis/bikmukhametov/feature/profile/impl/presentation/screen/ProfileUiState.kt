@@ -8,6 +8,7 @@ data class ProfileUiState(
     val tokens: String? = null,
     val isDarkTheme: Boolean = false,
     val isLoadingProfile: Boolean = false,
+    val isUpdatingUserName: Boolean = false,
     val isUploadingPhoto: Boolean = false,
     val isSigningOut: Boolean = false,
 )
