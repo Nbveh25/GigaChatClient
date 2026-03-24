@@ -16,6 +16,10 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.data.api.GigaChatMain
 import ru.kazan.itis.bikmukhametov.network.BuildConfig
 import ru.kazan.itis.bikmukhametov.network.auth.token.GigaChatAuthenticator
 
+private const val CONNECT_TIMEOUT = 60L
+private const val READ_TIMEOUT = 5L
+private const val WRITE_TIMEOUT = 120L
+
 @Module
 @InstallIn(SingletonComponent::class)
 object ChatMainNetworkModule {
@@ -28,10 +32,9 @@ object ChatMainNetworkModule {
         authenticator: GigaChatAuthenticator,
     ): OkHttpClient =
         OkHttpClient.Builder()
-            // Дефолт OkHttp — 10 с на connect/read; completions и text2image у GigaChat часто дольше.
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(5, TimeUnit.MINUTES)
-            .writeTimeout(120, TimeUnit.SECONDS)
+            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT, TimeUnit.MINUTES)
+            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
             .addInterceptor(mainInterceptor)
             .authenticator(authenticator)
             .addInterceptor(

@@ -22,7 +22,6 @@ class ChatListViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<ChatListEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<ChatListEffect> = _effect.asSharedFlow()
 
-    private val pageSize = 20
     private var loadedItemsCount = 0
 
     init {
@@ -61,7 +60,7 @@ class ChatListViewModel @Inject constructor(
 
             loadedItemsCount = 0
 
-            loadChatsUseCase(offset = 0, limit = pageSize)
+            loadChatsUseCase(offset = 0, limit = PAGE_SIZE)
                 .onSuccess { list ->
                     loadedItemsCount = list.size
                     updateState {
@@ -69,7 +68,7 @@ class ChatListViewModel @Inject constructor(
                             chats = list,
                             isChatListLoading = false,
                             isNextPageLoading = false,
-                            canLoadMore = list.size == pageSize,
+                            canLoadMore = list.size == PAGE_SIZE,
                             isSearchActive = false,
                         )
                     }
@@ -98,7 +97,7 @@ class ChatListViewModel @Inject constructor(
         viewModelScope.launch {
             updateState { copy(isNextPageLoading = true) }
 
-            loadChatsUseCase(offset = loadedItemsCount, limit = pageSize)
+            loadChatsUseCase(offset = loadedItemsCount, limit = PAGE_SIZE)
                 .onSuccess { list ->
                     if (list.isEmpty()) {
                         updateState { copy(isNextPageLoading = false, canLoadMore = false) }
@@ -110,7 +109,7 @@ class ChatListViewModel @Inject constructor(
                         copy(
                             chats = chats + list,
                             isNextPageLoading = false,
-                            canLoadMore = list.size == pageSize,
+                            canLoadMore = list.size == PAGE_SIZE,
                         )
                     }
                 }
@@ -180,5 +179,9 @@ class ChatListViewModel @Inject constructor(
 
     private fun emitEffect(effect: ChatListEffect) {
         viewModelScope.launch { _effect.emit(effect) }
+    }
+
+    private companion object {
+        private const val PAGE_SIZE = 20
     }
 }

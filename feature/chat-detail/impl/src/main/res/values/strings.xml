@@ -10,4 +10,11 @@
     <string name="chat_detail_cd_send">Отправить</string>
     <string name="chat_detail_cd_clear">Очистить текст</string>
     <string name="chat_detail_cd_share">Поделиться ответом</string>
+
+    <string name="chat_detail_repo_error_empty_messages">Пустой список сообщений</string>
+    <string name="chat_detail_repo_error_empty_response">Пустой ответ от API</string>
+    <string name="chat_detail_repo_error_empty_forced_image">Пустой ответ при форсированной генерации изображения</string>
+    <string name="chat_detail_repo_error_empty_file_id">Пустой id изображения</string>
+    <string name="chat_detail_repo_error_empty_image_bytes">Пустой файл изображения</string>
+    <string name="chat_detail_repo_system_prompt_force_image"><![CDATA[Если пользователь просит нарисовать или сгенерировать изображение, обязательно вызови встроенную функцию text2image и верни результат с тегом <img src="..." fuse="true"/>.]]></string>
 </resources>

@@ -97,7 +97,6 @@ fun ProfileScreen(
             UserInfoSection(
                 userName = uiState.userName ?: emptyValue,
                 email = uiState.email ?: emptyValue,
-                phone = uiState.phone ?: emptyValue,
                 tokens = uiState.tokens ?: emptyValue,
                 emptyValue = emptyValue,
                 isUpdatingUserName = uiState.isUpdatingUserName,

@@ -26,7 +26,6 @@ import ru.kazan.itis.bikmukhametov.feature.profile.impl.R
 fun UserInfoSection(
     userName: String,
     email: String,
-    phone: String,
     tokens: String,
     emptyValue: String,
     isUpdatingUserName: Boolean,
