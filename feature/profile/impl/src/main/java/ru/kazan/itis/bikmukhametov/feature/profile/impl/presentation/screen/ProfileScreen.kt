@@ -54,11 +54,11 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                ProfileEffect.OpenPhotoPicker -> {
+                is ProfileEffect.OpenPhotoPicker -> {
                     photoPickerLauncher.launch("image/*")
                     onPhotoClick()
                 }
-                ProfileEffect.SignedOut -> onSignOutClick()
+                is ProfileEffect.SignedOut -> onSignOutClick()
                 is ProfileEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
             }
         }

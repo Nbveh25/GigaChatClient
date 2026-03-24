@@ -72,7 +72,6 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun observeValidation() {
-        // Автоматически обновляем состояние кнопки при любом изменении полей
         state
             .map { s ->
                 validateRegistrationUseCase(s.emailInput, s.passwordInput, s.confirmPasswordInput)

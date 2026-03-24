@@ -33,7 +33,6 @@ fun ChatListContent(
 ) {
     val listState = rememberLazyListState()
 
-    // Используем наше расширение
     listState.OnBottomReached(buffer = 2) {
         if (canLoadMore && !isNextPageLoading && chats.isNotEmpty()) {
             onLoadNextPage()

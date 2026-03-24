@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import ru.kazan.itis.bikmukhametov.common.util.error.runCatchingCancelable
 import ru.kazan.itis.bikmukhametov.common.util.resource.StringResourceProvider
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.BuildConfig
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.R
@@ -37,7 +38,7 @@ internal class AvatarUploaderImpl @Inject constructor(
         fileName: String,
         userId: String,
     ): Result<String> = withContext(Dispatchers.IO) {
-        runCatching {
+        runCatchingCancelable {
             val bytes = inputStream.use { it.readBytes() }
 
             require(bytes.isNotEmpty()) {

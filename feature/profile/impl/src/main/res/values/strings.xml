@@ -17,4 +17,8 @@
 
     <string name="profile_upload_error_empty_file">Файл пуст</string>
     <string name="profile_upload_log_failed">Ошибка загрузки аватара</string>
+
+    <string name="profile_select_image_error_open_failed">Не удалось открыть файл</string>
+    <string name="profile_select_image_error_file_too_large">Файл слишком большой. Максимальный размер: %1$d МБ</string>
+    <string name="profile_select_image_default_file_name">profile_photo_%1$d.jpg</string>
 </resources>
