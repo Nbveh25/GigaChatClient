@@ -4,5 +4,8 @@ import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatAssistantRep
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatCompletionMessage
 
 fun interface SendChatMessageUseCase {
-    suspend operator fun invoke(messages: List<ChatCompletionMessage>): Result<ChatAssistantReply>
+    suspend operator fun invoke(
+        messages: List<ChatCompletionMessage>,
+        imageGenerationEnabled: Boolean,
+    ): Result<ChatAssistantReply>
 }

@@ -23,7 +23,7 @@ internal class RequestAssistantReplyUseCaseImpl @Inject constructor(
     private val generateChatTitleUseCase: GenerateChatTitleUseCase,
 ) : RequestAssistantReplyUseCase {
 
-    override suspend fun invoke(chatId: String): Result<Unit> {
+    override suspend fun invoke(chatId: String, imageGenerationEnabled: Boolean): Result<Unit> {
         return runCatchingCancelable {
             // 1. Получаем историю сообщений для контекста GigaChat
             val history = getChatMessagesUseCase(chatId)
@@ -36,7 +36,7 @@ internal class RequestAssistantReplyUseCaseImpl @Inject constructor(
             }
 
             // 2. Делаем запрос к нейросети
-            val assistantReply = sendChatMessageUseCase(apiMessages).getOrThrow()
+            val assistantReply = sendChatMessageUseCase(apiMessages, imageGenerationEnabled).getOrThrow()
 
             // 3. Сохраняем ответ ассистента в БД
             val isFirstAssistantReply = history.none { it.role == ASSISTANT }
@@ -56,9 +56,12 @@ internal class RequestAssistantReplyUseCaseImpl @Inject constructor(
             if (isFirstAssistantReply) {
                 val currentChat = observeChatByIdUseCase(chatId).first()
 
+                val lastUserText = history.lastOrNull { it.role == USER_ROLE }?.text
+
                 val newTitle = generateChatTitleUseCase(
                     assistantText = assistantReply.content,
-                    currentTitle = currentChat?.title.orEmpty()
+                    currentTitle = currentChat?.title.orEmpty(),
+                    fallbackUserMessage = lastUserText,
                 )
 
                 updateChatTitleUseCase(chatId, newTitle)
@@ -68,5 +71,6 @@ internal class RequestAssistantReplyUseCaseImpl @Inject constructor(
 
     private companion object {
         private const val ASSISTANT = "assistant"
+        private const val USER_ROLE = "user"
     }
 }

@@ -2,6 +2,7 @@
 <resources>
     <string name="chat_detail_screen_title">Чат</string>
     <string name="chat_detail_input_hint">Сообщение…</string>
+    <string name="chat_detail_image_generation">Генерация изображений</string>
     <string name="chat_detail_generating">Генерация ответа…</string>
     <string name="chat_detail_error_generation">Не удалось получить ответ. Попробуйте ещё раз.</string>
     <string name="chat_detail_retry">Повторить</string>

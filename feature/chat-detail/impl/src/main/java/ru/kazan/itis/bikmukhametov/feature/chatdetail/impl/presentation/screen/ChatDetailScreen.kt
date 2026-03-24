@@ -89,6 +89,10 @@ fun ChatDetailScreen(
                 onClear = { viewModel.onIntent(ChatDetailIntent.ClearInputClicked) },
                 sendEnabled = uiState.inputText.trim().isNotEmpty(),
                 isSending = uiState.isGenerating,
+                imageGenerationEnabled = uiState.imageGenerationEnabled,
+                onImageGenerationEnabledChange = {
+                    viewModel.onIntent(ChatDetailIntent.ImageGenerationEnabledChanged(it))
+                },
                 modifier = Modifier
                     .navigationBarsPadding()
                     .imePadding(),

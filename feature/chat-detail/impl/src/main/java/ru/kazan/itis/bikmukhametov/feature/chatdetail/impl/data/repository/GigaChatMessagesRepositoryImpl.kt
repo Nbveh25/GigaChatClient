@@ -19,7 +19,10 @@ class GigaChatMessagesRepositoryImpl @Inject constructor(
     private val chatApi: GigaChatMainApi,
 ) : GigaChatMessagesRepository {
 
-    override suspend fun sendChatCompletion(messages: List<ChatCompletionMessage>): Result<ChatAssistantReply> {
+    override suspend fun sendChatCompletion(
+        messages: List<ChatCompletionMessage>,
+        imageGenerationEnabled: Boolean,
+    ): Result<ChatAssistantReply> {
         if (messages.isEmpty()) {
             Timber.w("GigaChatMessagesRepository: messages empty")
             return Result.failure(IllegalArgumentException("Пустой список сообщений"))
@@ -33,14 +36,13 @@ class GigaChatMessagesRepositoryImpl @Inject constructor(
             )
         }
         val lastUserMessage = messages.lastOrNull { it.role == USER_ROLE }?.content.orEmpty()
-        val imagePrompt = isImagePrompt(lastUserMessage)
 
         val request = ChatRequest(
             model = ChatRequest.DEFAULT_MODEL,
             messages = messageDtos,
             stream = false,
             functionCall = "auto",
-            functions = if (imagePrompt) {
+            functions = if (imageGenerationEnabled) {
                 listOf(ChatBuiltinFunction(name = "text2image"))
             } else {
                 null
@@ -61,7 +63,7 @@ class GigaChatMessagesRepositoryImpl @Inject constructor(
                     content = content,
                     functionsStateId = message.functionsStateId,
                 )
-                val shouldForceImageRetry = imagePrompt && !containsImageTag(content)
+                val shouldForceImageRetry = imageGenerationEnabled && !containsImageTag(content)
 
                 if (shouldForceImageRetry) {
                     Timber.w("GigaChatMessagesRepository: no <img> for image prompt, retrying with forced system prompt")
@@ -125,11 +127,6 @@ class GigaChatMessagesRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun isImagePrompt(text: String): Boolean {
-        if (text.isBlank()) return false
-        return IMAGE_PROMPT_REGEX.containsMatchIn(text.lowercase())
-    }
-
     private fun containsImageTag(text: String): Boolean = IMAGE_TAG_REGEX.containsMatchIn(text)
 
     override suspend fun downloadGeneratedImage(fileId: String): Result<ByteArray> {
@@ -160,10 +157,6 @@ class GigaChatMessagesRepositoryImpl @Inject constructor(
         private const val USER_ROLE = "user"
         private const val SYSTEM_ROLE = "system"
         private val IMAGE_TAG_REGEX = Regex("<img\\s+src=[\"']([^\"']+)[\"'][^>]*/?>")
-        private val IMAGE_PROMPT_REGEX = Regex(
-            pattern = "(нарисуй|сгенерируй|изображени|картинк|иллюстрац|draw|generate\\s+image|image)",
-            option = RegexOption.IGNORE_CASE,
-        )
         private const val FORCE_IMAGE_SYSTEM_PROMPT =
             "Если пользователь просит нарисовать или сгенерировать изображение, " +
                 "обязательно вызови встроенную функцию text2image и верни результат с тегом <img src=\"...\" fuse=\"true\"/>."

@@ -10,6 +10,9 @@ internal class SendChatMessageUseCaseImpl @Inject constructor(
     private val gigaChatMessagesRepository: GigaChatMessagesRepository,
 ) : SendChatMessageUseCase {
 
-    override suspend fun invoke(messages: List<ChatCompletionMessage>): Result<ChatAssistantReply> =
-        gigaChatMessagesRepository.sendChatCompletion(messages)
+    override suspend fun invoke(
+        messages: List<ChatCompletionMessage>,
+        imageGenerationEnabled: Boolean,
+    ): Result<ChatAssistantReply> =
+        gigaChatMessagesRepository.sendChatCompletion(messages, imageGenerationEnabled)
 }

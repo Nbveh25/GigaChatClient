@@ -6,6 +6,8 @@ data class ChatDetailUiState(
     val chatTitle: String = "Новый чат",
     val messages: List<ChatMessageItem> = emptyList(),
     val inputText: String = "",
+    /** Включена генерация изображений (text2image); выключено — обычный текстовый ответ. */
+    val imageGenerationEnabled: Boolean = false,
     val isGenerating: Boolean = false,
     val generationError: Boolean = false,
     val generationErrorMessage: String? = null,

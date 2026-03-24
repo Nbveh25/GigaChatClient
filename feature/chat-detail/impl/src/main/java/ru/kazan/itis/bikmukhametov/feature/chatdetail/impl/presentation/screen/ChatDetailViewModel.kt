@@ -49,6 +49,9 @@ class ChatDetailViewModel @Inject constructor(
     override fun onIntent(action: ChatDetailIntent) {
         when (action) {
             is ChatDetailIntent.InputTextChanged -> updateState { copy(inputText = action.value) }
+            is ChatDetailIntent.ImageGenerationEnabledChanged -> updateState {
+                copy(imageGenerationEnabled = action.enabled)
+            }
             is ChatDetailIntent.SendClicked -> send()
             is ChatDetailIntent.ClearInputClicked -> updateState {
                 copy(inputText = "")
@@ -142,9 +145,10 @@ class ChatDetailViewModel @Inject constructor(
         if (chatId.isBlank()) return
 
         viewModelScope.launch {
+            val imageGenerationEnabled = state.value.imageGenerationEnabled
             updateState { copy(isGenerating = true, generationError = false) }
 
-            requestAssistantReplyUseCase(chatId)
+            requestAssistantReplyUseCase(chatId, imageGenerationEnabled)
                 .onSuccess { updateState { copy(isGenerating = false) } }
                 .onFailure { e ->
                     updateState {

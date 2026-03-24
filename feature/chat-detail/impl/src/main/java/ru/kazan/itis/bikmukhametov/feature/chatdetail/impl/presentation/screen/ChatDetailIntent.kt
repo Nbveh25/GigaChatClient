@@ -2,6 +2,7 @@ package ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen
 
 sealed interface ChatDetailIntent {
     data class InputTextChanged(val value: String) : ChatDetailIntent
+    data class ImageGenerationEnabledChanged(val enabled: Boolean) : ChatDetailIntent
     data object SendClicked : ChatDetailIntent
     data object ClearInputClicked : ChatDetailIntent
     data object RetryClicked : ChatDetailIntent
