@@ -32,9 +32,19 @@ class ChatListViewModel @Inject constructor(
         when (action) {
             is ChatListIntent.SearchTextChanged -> updateState { copy(searchFieldText = action.text) }
             is ChatListIntent.SearchClicked -> onSearchClicked()
+            is ChatListIntent.RefreshRequested -> refreshOnReturn()
             is ChatListIntent.LoadNextPage -> loadPage(isInitial = false)
             is ChatListIntent.CreateNewChatClicked -> createNewChat()
             is ChatListIntent.ChatItemClicked -> emitEffect(ChatListEffect.NavigateToChat(action.chatId))
+        }
+    }
+
+    private fun refreshOnReturn() {
+        val query = state.value.searchFieldText.trim()
+        if (query.isEmpty()) {
+            loadPage(isInitial = true)
+        } else {
+            onSearchClicked()
         }
     }
 
