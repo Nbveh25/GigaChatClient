@@ -48,7 +48,7 @@ fun ChatListContent(
         items(
             items = chats,
             key = { it.id },
-            contentType = { "chat_item" } // Помогает Compose оптимизировать повторное использование
+            contentType = { "chat_item" }
         ) { chat ->
             ChatListRow(
                 title = chat.title,
