@@ -6,6 +6,7 @@ import com.cloudinary.android.callback.UploadCallback
 /**
  * Базовый класс, чтобы не переопределять все методы интерфейса каждый раз
  */
+@Suppress("EmptyFunctionBlock")
 open class DefaultUploadCallback : UploadCallback {
     override fun onStart(requestId: String) {}
     override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}

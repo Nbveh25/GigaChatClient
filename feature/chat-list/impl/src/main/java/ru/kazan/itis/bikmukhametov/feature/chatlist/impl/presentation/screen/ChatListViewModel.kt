@@ -22,103 +22,58 @@ class ChatListViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<ChatListEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<ChatListEffect> = _effect.asSharedFlow()
 
-    private var loadedItemsCount = 0
+    private val currentOffset: Int get() = state.value.chats.size
 
     init {
-        loadInitialPage()
+        loadPage(isInitial = true)
     }
 
     override fun onIntent(action: ChatListIntent) {
         when (action) {
-            is ChatListIntent.SearchTextChanged -> {
-                updateState { copy(searchFieldText = action.text) }
-            }
-
+            is ChatListIntent.SearchTextChanged -> updateState { copy(searchFieldText = action.text) }
             is ChatListIntent.SearchClicked -> onSearchClicked()
-
-            is ChatListIntent.LoadNextPage -> loadNextPage()
-
+            is ChatListIntent.LoadNextPage -> loadPage(isInitial = false)
             is ChatListIntent.CreateNewChatClicked -> createNewChat()
-
-            is ChatListIntent.ChatItemClicked -> {
-                emitEffect(ChatListEffect.NavigateToChat(action.chatId))
-            }
+            is ChatListIntent.ChatItemClicked -> emitEffect(ChatListEffect.NavigateToChat(action.chatId))
         }
     }
 
-    private fun loadInitialPage() {
-        if (state.value.isChatListLoading) return
-
-        viewModelScope.launch {
-            updateState {
-                copy(
-                    isChatListLoading = true,
-                    isNextPageLoading = false,
-                    canLoadMore = true,
-                )
-            }
-
-            loadedItemsCount = 0
-
-            loadChatsUseCase(offset = 0, limit = PAGE_SIZE)
-                .onSuccess { list ->
-                    loadedItemsCount = list.size
-                    updateState {
-                        copy(
-                            chats = list,
-                            isChatListLoading = false,
-                            isNextPageLoading = false,
-                            canLoadMore = list.size == PAGE_SIZE,
-                            isSearchActive = false,
-                        )
-                    }
-                }
-                .onFailure {
-                    updateState {
-                        copy(
-                            chats = emptyList(),
-                            isChatListLoading = false,
-                            isNextPageLoading = false,
-                            canLoadMore = false,
-                            isSearchActive = false,
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun loadNextPage() {
+    private fun loadPage(isInitial: Boolean) {
         val currentState = state.value
 
-        if (currentState.isSearchActive ||
-            currentState.isChatListLoading ||
-            currentState.isNextPageLoading ||
-            !currentState.canLoadMore
-        ) {
-            return
-        }
+        if (isInitial && currentState.isChatListLoading) return
+        if (!isInitial && (currentState.isNextPageLoading ||
+                    !currentState.canLoadMore || currentState.isSearchActive)) return
 
         viewModelScope.launch {
-            updateState { copy(isNextPageLoading = true) }
+            if (isInitial) {
+                updateState { copy(isChatListLoading = true, canLoadMore = true) }
+            } else {
+                updateState { copy(isNextPageLoading = true) }
+            }
 
-            loadChatsUseCase(offset = loadedItemsCount, limit = PAGE_SIZE)
-                .onSuccess { list ->
-                    if (list.isEmpty()) {
-                        updateState { copy(isNextPageLoading = false, canLoadMore = false) }
-                        return@onSuccess
-                    }
+            val offset = if (isInitial) 0 else currentOffset
 
-                    loadedItemsCount += list.size
+            loadChatsUseCase(offset = offset, limit = PAGE_SIZE)
+                .onSuccess { newList ->
                     updateState {
                         copy(
-                            chats = chats + list,
+                            chats = if (isInitial) newList else chats + newList,
+                            isChatListLoading = false,
                             isNextPageLoading = false,
-                            canLoadMore = list.size == PAGE_SIZE,
+                            canLoadMore = newList.size == PAGE_SIZE,
+                            isSearchActive = false
                         )
                     }
                 }
                 .onFailure {
-                    updateState { copy(isNextPageLoading = false) }
+                    updateState {
+                        copy(
+                            isChatListLoading = false,
+                            isNextPageLoading = false,
+                            canLoadMore = false
+                        )
+                    }
                 }
         }
     }
@@ -127,59 +82,34 @@ class ChatListViewModel @Inject constructor(
         val query = state.value.searchFieldText.trim()
 
         if (query.isEmpty()) {
-            loadInitialPage()
+            loadPage(isInitial = true)
             return
         }
 
         viewModelScope.launch {
-            updateState {
-                copy(
-                    isChatListLoading = true,
-                    isSearchActive = true,
-                    canLoadMore = false
-                )
-            }
+            updateState { copy(isChatListLoading = true, isSearchActive = true, canLoadMore = false) }
+
             loadChatsBySearchUseCase(query)
                 .onSuccess { list ->
-                    updateState {
-                        copy(
-                            chats = list,
-                            isChatListLoading = false,
-                            isSearchActive = true,
-                            isNextPageLoading = false,
-                            canLoadMore = false,
-                        )
-                    }
+                    updateState { copy(chats = list, isChatListLoading = false) }
                 }
                 .onFailure {
-                    updateState {
-                        copy(
-                            chats = emptyList(),
-                            isChatListLoading = false,
-                            isSearchActive = true,
-                            isNextPageLoading = false,
-                            canLoadMore = false,
-                        )
-                    }
+                    updateState { copy(chats = emptyList(), isChatListLoading = false) }
                 }
         }
     }
 
     private fun createNewChat() {
+        if (state.value.isCreatingChat) return
+
         viewModelScope.launch {
-            if (state.value.isCreatingChat) return@launch
             updateState { copy(isCreatingChat = true) }
+
             createChatUseCase()
                 .onSuccess { chatId ->
-                    loadInitialPage()
-                    updateState {
-                        copy(
-                            isCreatingChat = false,
-                            isSearchActive = false,
-                            searchFieldText = ""
-                        )
-                    }
-                    _effect.emit(ChatListEffect.NavigateToChat(chatId))
+                    updateState { copy(isCreatingChat = false, searchFieldText = "") }
+                    loadPage(isInitial = true)
+                    emitEffect(ChatListEffect.NavigateToChat(chatId))
                 }
                 .onFailure {
                     updateState { copy(isCreatingChat = false) }

@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,18 +33,11 @@ fun ChatListContent(
 ) {
     val listState = rememberLazyListState()
 
-    LaunchedEffect(listState, chats, canLoadMore, isNextPageLoading) {
-        snapshotFlow {
-            val lastVisibleIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-            val prefetchThreshold = 2
-            lastVisibleIndex >= chats.lastIndex - prefetchThreshold
+    // Используем наше расширение
+    listState.OnBottomReached(buffer = 2) {
+        if (canLoadMore && !isNextPageLoading && chats.isNotEmpty()) {
+            onLoadNextPage()
         }
-            .distinctUntilChanged()
-            .collect { shouldLoadNext ->
-                if (shouldLoadNext && chats.isNotEmpty() && canLoadMore && !isNextPageLoading) {
-                    onLoadNextPage()
-                }
-            }
     }
 
     LazyColumn(
@@ -52,6 +48,7 @@ fun ChatListContent(
         items(
             items = chats,
             key = { it.id },
+            contentType = { "chat_item" } // Помогает Compose оптимизировать повторное использование
         ) { chat ->
             ChatListRow(
                 title = chat.title,
@@ -61,14 +58,41 @@ fun ChatListContent(
 
         if (isNextPageLoading) {
             item(key = "next_page_loader") {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
+                NextPageLoader()
             }
         }
+    }
+}
+
+@Composable
+private fun NextPageLoader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun LazyListState.OnBottomReached(
+    buffer: Int = 2,
+    onLoadMore: () -> Unit
+) {
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
+            lastVisibleItem.index >= layoutInfo.totalItemsCount - 1 - buffer
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        snapshotFlow { shouldLoadMore.value }
+            .distinctUntilChanged()
+            .collect { reached ->
+                if (reached) onLoadMore()
+            }
     }
 }
