@@ -36,10 +36,7 @@ import ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen.Reg
 import ru.kazan.itis.bikmukhametov.gigachat.R
 import ru.kazan.itis.bikmukhametov.feature.chatlist.impl.presentation.screen.ChatListScreen
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailScreen
-import ru.kazan.itis.bikmukhametov.feature.chatdetail.impl.presentation.screen.ChatDetailViewModel
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.presentation.screen.ProfileScreen
-import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.DrawerDestination
-import ru.kazan.itis.bikmukhametov.gigachat.ui.placeholder.ImagesPlaceholder
 
 private fun isOnChatDetail(entry: NavBackStackEntry?): Boolean =
     entry?.arguments?.containsKey("chatId") == true
@@ -49,15 +46,16 @@ private fun isDrawerItemSelected(
     entry: NavBackStackEntry?,
 ): Boolean {
     val route = entry?.destination?.route
+    val imageGen = entry?.arguments?.getBoolean("imageGeneration") == true
     return when {
         item === DrawerDestination.search ->
             route == NavRoutes.ChatList
         item === DrawerDestination.chats ->
-            route == NavRoutes.ChatList || isOnChatDetail(entry)
+            route == NavRoutes.ChatList || (isOnChatDetail(entry) && !imageGen)
         item === DrawerDestination.profile ->
             route == NavRoutes.Profile
         item === DrawerDestination.images ->
-            route == NavRoutes.Images
+            isOnChatDetail(entry) && imageGen
         else -> false
     }
 }
@@ -107,6 +105,12 @@ fun AppNavigation(
                                     scope.launch {
                                         val id = appNavViewModel.createNewChat()
                                         navController.navigate(NavRoutes.chat(id))
+                                    }
+                                }
+                                DrawerDestination.ImagesChatAction -> {
+                                    scope.launch {
+                                        val id = appNavViewModel.createNewChat()
+                                        navController.navigate(NavRoutes.chat(id, imageGeneration = true))
                                     }
                                 }
                                 else -> {
@@ -161,8 +165,12 @@ fun AppNavigation(
                 route = NavRoutes.Chat,
                 arguments = listOf(
                     navArgument("chatId") { type = NavType.StringType },
+                    navArgument("imageGeneration") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
                 ),
-            ) { backStackEntry ->
+            ) {
                 ChatDetailScreen(
                     onBack = { navController.popBackStack() },
                 )
@@ -179,11 +187,6 @@ fun AppNavigation(
                             launchSingleTop = true
                         }
                     },
-                )
-            }
-            composable(NavRoutes.Images) {
-                ImagesPlaceholder(
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
                 )
             }
         }

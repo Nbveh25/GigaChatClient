@@ -32,7 +32,11 @@ class ChatDetailViewModel @Inject constructor(
     private val observeChatMessagesUseCase: ObserveChatMessagesUseCase,
     private val requestAssistantReplyUseCase: RequestAssistantReplyUseCase,
     private val downloadGeneratedImageUseCase: DownloadGeneratedImageUseCase,
-) : BaseViewModel<ChatDetailUiState, ChatDetailIntent>(ChatDetailUiState()) {
+) : BaseViewModel<ChatDetailUiState, ChatDetailIntent>(
+    ChatDetailUiState(
+        imageGenerationEnabled = savedStateHandle.get<Boolean>(IMAGE_GENERATION_ARG) ?: false,
+    ),
+) {
 
     private val chatId: String = savedStateHandle.get<String>(CHAT_ID_ARG) ?: ""
 
@@ -169,6 +173,7 @@ class ChatDetailViewModel @Inject constructor(
 
     private companion object {
         private const val CHAT_ID_ARG = "chatId"
+        private const val IMAGE_GENERATION_ARG = "imageGeneration"
         private const val USER_ROLE = "user"
     }
 }

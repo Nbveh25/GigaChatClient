@@ -4,9 +4,9 @@ object NavRoutes {
     const val Auth = "auth"
     const val Register = "register"
     const val ChatList = "chats"
-    const val Chat = "chat/{chatId}"
+    const val Chat = "chat/{chatId}?imageGeneration={imageGeneration}"
     const val Profile = "profile"
-    const val Images = "images"
 
-    fun chat(chatId: String): String = "chat/$chatId"
+    fun chat(chatId: String, imageGeneration: Boolean = false): String =
+        "chat/$chatId?imageGeneration=$imageGeneration"
 }
