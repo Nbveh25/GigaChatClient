@@ -11,36 +11,25 @@ internal class ImageResourceProviderImpl @Inject constructor(
     private val contentResolver: ContentResolver
 ) : ImageResourceProvider {
 
-    override fun openInputStream(uriString: String): InputStream? {
-        return try {
-            val uri = uriString.toUri()
-            contentResolver.openInputStream(uri)
-        } catch (e: Exception) {
-            null
-        }
-    }
+    override fun openInputStream(uriString: String): InputStream? = runCatching {
+        contentResolver.openInputStream(uriString.toUri())
+    }.getOrNull()
 
-    override fun getFileName(uriString: String): String? {
-        return try {
-            val uri = uriString.toUri()
-            var name: String? = null
-            
-            if (uri.scheme == CONTENT_SCHEME) {
-                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+    override fun getFileName(uriString: String): String? = runCatching {
+        val uri = uriString.toUri()
+
+        if (uri.scheme == CONTENT_SCHEME) {
+            contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                ?.use { cursor ->
                     if (cursor.moveToFirst()) {
-                        val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                        if (nameIndex != -1) {
-                            name = cursor.getString(nameIndex)
-                        }
-                    }
+                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        if (index != -1) cursor.getString(index) else null
+                    } else null
                 }
-            }
-            
-            name ?: uri.lastPathSegment
-        } catch (e: Exception) {
-            null
+        } else {
+            uri.lastPathSegment
         }
-    }
+    }.getOrNull() ?: uriString.toUri().lastPathSegment
 
     private companion object {
         private const val CONTENT_SCHEME = "content"

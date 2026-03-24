@@ -165,7 +165,4 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch { _effect.emit(effect) }
     }
 
-    private companion object {
-        private const val TAG = "ProfileViewModel"
-    }
 }

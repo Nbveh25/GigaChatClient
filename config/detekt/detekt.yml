@@ -656,6 +656,8 @@ style:
     excludeImportStatements: true
     excludeCommentStatements: false
     excludeRawStrings: true
+    ignoreAnnotated:
+      - 'Module'
   MayBeConst:
     active: true
   ModifierOrder:

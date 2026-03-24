@@ -11,7 +11,6 @@ suspend inline fun <T> runCatchingCancelable(crossinline block: suspend () -> T)
     } catch (e: CancellationException) {
         throw e
     } catch (e: HttpException) {
-        val body = e.response()?.errorBody()?.string() ?: e.message()
         Result.failure(IOException("Ошибка сервера (${e.code()})"))
     } catch (e: Throwable) {
         Result.failure(e)

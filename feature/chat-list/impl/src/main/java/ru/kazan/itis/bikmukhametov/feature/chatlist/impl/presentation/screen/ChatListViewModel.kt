@@ -90,7 +90,11 @@ class ChatListViewModel @Inject constructor(
     private fun loadNextPage() {
         val currentState = state.value
 
-        if (currentState.isSearchActive || currentState.isChatListLoading || currentState.isNextPageLoading || !currentState.canLoadMore) {
+        if (currentState.isSearchActive ||
+            currentState.isChatListLoading ||
+            currentState.isNextPageLoading ||
+            !currentState.canLoadMore
+        ) {
             return
         }
 
@@ -128,7 +132,13 @@ class ChatListViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            updateState { copy(isChatListLoading = true, isSearchActive = true, canLoadMore = false) }
+            updateState {
+                copy(
+                    isChatListLoading = true,
+                    isSearchActive = true,
+                    canLoadMore = false
+                )
+            }
             loadChatsBySearchUseCase(query)
                 .onSuccess { list ->
                     updateState {
