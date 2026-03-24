@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import ru.kazan.itis.bikmukhametov.common.util.error.ErrorMessageMapper
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.model.ChatMessageModel
 import ru.kazan.itis.bikmukhametov.feature.chatdetail.api.usecase.DownloadGeneratedImageUseCase
@@ -32,6 +33,7 @@ class ChatDetailViewModel @Inject constructor(
     private val observeChatMessagesUseCase: ObserveChatMessagesUseCase,
     private val requestAssistantReplyUseCase: RequestAssistantReplyUseCase,
     private val downloadGeneratedImageUseCase: DownloadGeneratedImageUseCase,
+    private val errorMessageMapper: ErrorMessageMapper,
 ) : BaseViewModel<ChatDetailUiState, ChatDetailIntent>(
     ChatDetailUiState(
         imageGenerationEnabled = savedStateHandle.get<Boolean>(IMAGE_GENERATION_ARG) ?: false,
@@ -159,7 +161,7 @@ class ChatDetailViewModel @Inject constructor(
                         copy(
                             isGenerating = false,
                             generationError = true,
-                            generationErrorMessage = e.message,
+                            generationErrorMessage = errorMessageMapper.map(e),
                             pendingRetryText = retryText
                         )
                     }

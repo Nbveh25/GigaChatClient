@@ -2,7 +2,6 @@ package ru.kazan.itis.bikmukhametov.feature.register.impl.presentation.screen
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import ru.kazan.itis.bikmukhametov.common.util.error.ErrorMessageMapper
 import ru.kazan.itis.bikmukhametov.common.util.resource.StringResourceProvider
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 import ru.kazan.itis.bikmukhametov.feature.auth.api.validation.InputValidator
@@ -24,6 +24,7 @@ class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
     private val validateRegistrationUseCase: ValidateRegistrationUseCase,
     private val stringResourceProvider: StringResourceProvider,
+    private val errorMessageMapper: ErrorMessageMapper,
 ) : BaseViewModel<RegisterUiState, RegisterIntent>(RegisterUiState()) {
 
     private val _effect = MutableSharedFlow<RegisterEffect>(extraBufferCapacity = 64)
@@ -110,15 +111,16 @@ class RegisterViewModel @Inject constructor(
     }
 
     private suspend fun handleRegistrationError(e: Throwable) {
-        val message = when (e) {
-            is IOException -> {
-                updateState { copy(isNetworkError = true) }
-                stringResourceProvider.getString(R.string.register_error_network)
-            }
-
-            else -> e.message?.takeIf { it.isNotBlank() }
-                ?: stringResourceProvider.getString(R.string.register_error_register)
+        val message = if (isNetworkError(e)) {
+            updateState { copy(isNetworkError = true) }
+            stringResourceProvider.getString(R.string.register_error_network)
+        } else {
+            errorMessageMapper.map(e)
         }
         _effect.emit(RegisterEffect.ShowSnackbar(message))
+    }
+
+    private fun isNetworkError(error: Throwable): Boolean {
+        return generateSequence(error) { it.cause }.any { it is java.io.IOException }
     }
 }

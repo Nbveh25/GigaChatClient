@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_unknown">Произошла ошибка. Попробуйте еще раз.</string>
+    <string name="common_error_network">Нет подключения к сети</string>
+    <string name="common_error_http_400">Некорректный запрос</string>
+    <string name="common_error_http_401">Требуется повторная авторизация</string>
+    <string name="common_error_http_403">Недостаточно прав для выполнения действия</string>
+    <string name="common_error_http_404">Данные не найдены</string>
+    <string name="common_error_http_408">Время ожидания запроса истекло</string>
+    <string name="common_error_http_5xx">Сервис временно недоступен</string>
+</resources>

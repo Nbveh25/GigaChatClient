@@ -16,6 +16,7 @@ import ru.kazan.itis.bikmukhametov.api.usecase.SetAppThemeUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.SignOutUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UpdateUserNameUseCase
 import ru.kazan.itis.bikmukhametov.api.usecase.UploadProfilePhotoUseCase
+import ru.kazan.itis.bikmukhametov.common.util.error.ErrorMessageMapper
 import ru.kazan.itis.bikmukhametov.common.util.viewmodel.BaseViewModel
 
 @HiltViewModel
@@ -28,6 +29,7 @@ class ProfileViewModel @Inject constructor(
     private val selectImageUseCase: SelectImageUseCase,
     private val uploadProfilePhotoUseCase: UploadProfilePhotoUseCase,
     private val signOutUseCase: SignOutUseCase,
+    private val errorMessageMapper: ErrorMessageMapper,
 ) : BaseViewModel<ProfileUiState, ProfileIntent>(ProfileUiState()) {
 
     private val _effect = MutableSharedFlow<ProfileEffect>(extraBufferCapacity = 64)
@@ -69,7 +71,7 @@ class ProfileViewModel @Inject constructor(
                     updateState { copy(isUpdatingUserName = false) }
                     emitEffect(
                         ProfileEffect.ShowError(
-                            error.message ?: "Не удалось обновить имя пользователя",
+                            errorMessageMapper.map(error),
                         ),
                     )
                 }
@@ -98,7 +100,7 @@ class ProfileViewModel @Inject constructor(
                     updateState { copy(isLoadingProfile = false) }
                     emitEffect(
                         ProfileEffect.ShowError(
-                            error.message ?: "Не удалось загрузить профиль",
+                            errorMessageMapper.map(error),
                         ),
                     )
                 }
@@ -115,7 +117,7 @@ class ProfileViewModel @Inject constructor(
                     updateState { copy(tokens = null) }
                     emitEffect(
                         ProfileEffect.ShowError(
-                            error.message ?: "Не удалось загрузить баланс токенов",
+                            errorMessageMapper.map(error),
                         ),
                     )
                 }
@@ -143,7 +145,7 @@ class ProfileViewModel @Inject constructor(
                     updateState { copy(isUploadingPhoto = false) }
                     emitEffect(
                         ProfileEffect.ShowError(
-                            error.message ?: "Не удалось обновить фото профиля",
+                            errorMessageMapper.map(error),
                         ),
                     )
                 }
