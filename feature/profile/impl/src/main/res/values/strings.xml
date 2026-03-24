@@ -11,4 +11,7 @@
     <string name="profile_save_user_name">Сохранить имя</string>
     <string name="profile_logout">Выйти из аккаунта</string>
     <string name="profile_empty_value">—</string>
+
+    <string name="profile_repo_error_not_signed_in">Пользователь не авторизован</string>
+    <string name="profile_repo_error_tokens_balance_invalid">Не удалось получить баланс токенов: пустой или некорректный balance</string>
 </resources>
