@@ -56,11 +56,13 @@ internal class ProfileRepositoryImpl @Inject constructor(
         val user = firebaseAuth.currentUser
             ?: error(stringResources.getString(R.string.profile_repo_error_not_signed_in))
 
-        val photoUrl = avatarUploader.uploadAvatar(
-            inputStream = inputStream,
-            fileName = fileName,
-            userId = user.uid,
-        ).getOrThrow()
+        val photoUrl = inputStream.use { stream ->
+            avatarUploader.uploadAvatar(
+                inputStream = stream,
+                fileName = fileName,
+                userId = user.uid,
+            ).getOrThrow()
+        }
 
         val profileUpdate = UserProfileChangeRequest.Builder()
             .setPhotoUri(photoUrl.toUri())

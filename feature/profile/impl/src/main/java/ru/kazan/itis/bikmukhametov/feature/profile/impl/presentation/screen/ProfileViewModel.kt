@@ -40,12 +40,12 @@ class ProfileViewModel @Inject constructor(
 
     override fun onIntent(action: ProfileIntent) {
         when (action) {
-            ProfileIntent.LoadProfile -> loadProfile()
+            is ProfileIntent.LoadProfile -> loadProfile()
             is ProfileIntent.UpdateUserName -> updateUserName(action.name)
-            ProfileIntent.PhotoClicked -> emitEffect(ProfileEffect.OpenPhotoPicker)
+            is ProfileIntent.PhotoClicked -> emitEffect(ProfileEffect.OpenPhotoPicker)
             is ProfileIntent.PhotoSelected -> uploadPhoto(action.imageUriString)
             is ProfileIntent.ThemeChanged -> setAppTheme(action.isDarkTheme)
-            ProfileIntent.SignOutClicked -> signOut()
+            is ProfileIntent.SignOutClicked -> signOut()
         }
     }
 
@@ -107,14 +107,11 @@ class ProfileViewModel @Inject constructor(
 
     private fun loadTokensCount() {
         viewModelScope.launch {
-            Log.d(TAG, "loadTokensCount: start")
             getTokensCountUseCase()
                 .onSuccess { count ->
-                    Log.d(TAG, "loadTokensCount: success tokens=${count.tokens}")
                     updateState { copy(tokens = count.tokens.toString()) }
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "loadTokensCount: failure ${error.javaClass.simpleName}: ${error.message}", error)
                     updateState { copy(tokens = null) }
                     emitEffect(
                         ProfileEffect.ShowError(

@@ -9,13 +9,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import ru.kazan.itis.bikmukhametov.api.upload.AvatarUploader
+import ru.kazan.itis.bikmukhametov.common.util.resource.StringResourceProvider
 import ru.kazan.itis.bikmukhametov.feature.profile.impl.BuildConfig
+import ru.kazan.itis.bikmukhametov.feature.profile.impl.R
 import java.io.InputStream
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
 internal class AvatarUploaderImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val stringResources: StringResourceProvider,
 ) : AvatarUploader {
 
     private companion object {
@@ -32,20 +35,24 @@ internal class AvatarUploaderImpl @Inject constructor(
     override suspend fun uploadAvatar(
         inputStream: InputStream,
         fileName: String,
-        userId: String
+        userId: String,
     ): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
             val bytes = inputStream.use { it.readBytes() }
 
+            require(bytes.isNotEmpty()) {
+                stringResources.getString(R.string.profile_upload_error_empty_file)
+            }
+
             uploadToCloudinary(bytes, userId)
         }.onFailure {
-            Log.e(TAG, "Upload failed", it)
+            Log.e(TAG, stringResources.getString(R.string.profile_upload_log_failed), it)
         }
     }
 
     private suspend fun uploadToCloudinary(bytes: ByteArray, userId: String): String =
         suspendCancellableCoroutine { continuation ->
-            MediaManager.get().upload(bytes)
+            val requestId = MediaManager.get().upload(bytes)
                 .options(uploadOptions(userId))
                 .callback(object : DefaultUploadCallback() {
                     override fun onSuccess(requestId: String, resultData: Map<*, *>) {
@@ -58,6 +65,10 @@ internal class AvatarUploaderImpl @Inject constructor(
                     }
                 })
                 .dispatch()
+
+            continuation.invokeOnCancellation {
+                MediaManager.get().cancelRequest(requestId)
+            }
         }
 
     private fun uploadOptions(userId: String) = mapOf(
@@ -66,7 +77,7 @@ internal class AvatarUploaderImpl @Inject constructor(
         "api_key" to BuildConfig.CLOUDINARY_API_KEY,
         "api_secret" to BuildConfig.CLOUDINARY_API_SECRET,
         "overwrite" to true,
-        "resource_type" to IMAGE_RESOURCE_TYPE
+        "resource_type" to IMAGE_RESOURCE_TYPE,
     )
 
     private fun setupCloudinary() {
@@ -74,5 +85,4 @@ internal class AvatarUploaderImpl @Inject constructor(
             MediaManager.init(context, mapOf("cloud_name" to CLOUD_NAME, "secure" to true))
         }
     }
-
 }

@@ -14,4 +14,7 @@
 
     <string name="profile_repo_error_not_signed_in">Пользователь не авторизован</string>
     <string name="profile_repo_error_tokens_balance_invalid">Не удалось получить баланс токенов: пустой или некорректный balance</string>
+
+    <string name="profile_upload_error_empty_file">Файл пуст</string>
+    <string name="profile_upload_log_failed">Ошибка загрузки аватара</string>
 </resources>
